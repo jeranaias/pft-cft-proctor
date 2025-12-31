@@ -1,9 +1,15 @@
 /**
- * PFT/CFT Proctor App - Main Application
+ * PFT/CFT Proctor App - NAVMC 11622 Generator
+ * Main Application Logic
  */
 
 const App = {
-  currentTab: 'pft',
+  // Marines in the current worksheet
+  marines: [],
+
+  // Current calculated scores (for display)
+  currentPFT: null,
+  currentCFT: null,
 
   /**
    * Initialize the application
@@ -12,600 +18,343 @@ const App = {
     // Initialize theme
     ThemeManager.init();
 
-    // Set up tab navigation
-    this.setupTabs();
-
-    // Set up form handlers
-    this.setupPFTForm();
-    this.setupCFTForm();
-    this.setupBCPForm();
-    this.setupProctorForm();
-
-    // Load any saved drafts
-    this.loadDrafts();
-
-    // Set today's date for proctor mode
-    const dateInput = document.getElementById('proctor-date');
+    // Set today's date
+    const dateInput = document.getElementById('session-date');
     if (dateInput) {
       dateInput.value = new Date().toISOString().split('T')[0];
     }
 
-    // Load existing session
-    this.refreshSessionList();
-  },
+    // Set up DOB change listener for auto age calculation
+    const dobInput = document.getElementById('marine-dob');
+    if (dobInput) {
+      dobInput.addEventListener('change', () => this.calculateAge());
+    }
 
-  /**
-   * Set up tab navigation
-   */
-  setupTabs() {
-    const tabs = document.querySelectorAll('.tab');
-    tabs.forEach(tab => {
-      tab.addEventListener('click', () => {
-        const tabName = tab.dataset.tab;
-        this.switchTab(tabName);
-      });
-    });
-  },
-
-  /**
-   * Switch to a tab
-   */
-  switchTab(tabName) {
-    // Update tab buttons
-    document.querySelectorAll('.tab').forEach(tab => {
-      tab.classList.toggle('tab--active', tab.dataset.tab === tabName);
-    });
-
-    // Update tab panels
-    document.querySelectorAll('.tab-panel').forEach(panel => {
-      panel.classList.toggle('tab-panel--active', panel.id === `${tabName}-panel`);
-    });
-
-    this.currentTab = tabName;
-  },
-
-  /**
-   * Set up PFT form
-   */
-  setupPFTForm() {
-    const form = document.getElementById('pft-form');
-    if (!form) return;
-
-    // Upper body event toggle
-    const pullupRadio = document.getElementById('pft-pullups-radio');
-    const pushupRadio = document.getElementById('pft-pushups-radio');
-    const pullupGroup = document.getElementById('pft-pullup-group');
-    const pushupGroup = document.getElementById('pft-pushup-group');
-
-    if (pullupRadio && pushupRadio) {
-      pullupRadio.addEventListener('change', () => {
-        pullupGroup.classList.remove('hidden');
-        pushupGroup.classList.add('hidden');
-        this.calculatePFT();
-      });
-
-      pushupRadio.addEventListener('change', () => {
-        pullupGroup.classList.add('hidden');
-        pushupGroup.classList.remove('hidden');
-        this.calculatePFT();
+    // Set up gender change listener to recalculate
+    const genderInput = document.getElementById('marine-gender');
+    if (genderInput) {
+      genderInput.addEventListener('change', () => {
+        this.calculateScores();
+        this.calculateCFTScores();
       });
     }
 
-    // Cardio event toggle
-    const runRadio = document.getElementById('pft-run-radio');
-    const rowRadio = document.getElementById('pft-row-radio');
-    const runGroup = document.getElementById('pft-run-group');
-    const rowGroup = document.getElementById('pft-row-group');
+    // Load any saved session
+    this.loadSession();
 
-    if (runRadio && rowRadio) {
-      runRadio.addEventListener('change', () => {
-        runGroup.classList.remove('hidden');
-        rowGroup.classList.add('hidden');
-        this.calculatePFT();
-      });
-
-      rowRadio.addEventListener('change', () => {
-        runGroup.classList.add('hidden');
-        rowGroup.classList.remove('hidden');
-        this.calculatePFT();
-      });
-    }
-
-    // Add input listeners for auto-calculation
-    const inputs = form.querySelectorAll('input, select');
-    inputs.forEach(input => {
-      input.addEventListener('input', () => this.calculatePFT());
-      input.addEventListener('change', () => this.calculatePFT());
-    });
-
-    // Reset button
-    const resetBtn = document.getElementById('pft-reset');
-    if (resetBtn) {
-      resetBtn.addEventListener('click', () => this.resetPFTForm());
-    }
+    console.log('NAVMC 11622 Generator initialized');
   },
 
   /**
-   * Calculate and display PFT score
+   * Calculate age from DOB
    */
-  calculatePFT() {
-    const gender = document.getElementById('pft-gender')?.value || 'male';
-    const age = parseInt(document.getElementById('pft-age')?.value) || 21;
+  calculateAge() {
+    const dobInput = document.getElementById('marine-dob');
+    const ageInput = document.getElementById('marine-age');
 
-    const isPullups = document.getElementById('pft-pullups-radio')?.checked;
-    const pullups = parseInt(document.getElementById('pft-pullups')?.value) || 0;
-    const pushups = parseInt(document.getElementById('pft-pushups')?.value) || 0;
+    if (!dobInput || !dobInput.value) {
+      if (ageInput) ageInput.value = '';
+      return null;
+    }
 
-    const plankMin = parseInt(document.getElementById('pft-plank-min')?.value) || 0;
-    const plankSec = parseInt(document.getElementById('pft-plank-sec')?.value) || 0;
-    const plankSeconds = (plankMin * 60) + plankSec;
+    const dob = new Date(dobInput.value);
+    const today = new Date();
+    let age = today.getFullYear() - dob.getFullYear();
+    const m = today.getMonth() - dob.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+      age--;
+    }
 
-    const isRow = document.getElementById('pft-row-radio')?.checked;
-    const runMin = parseInt(document.getElementById('pft-run-min')?.value) || 0;
-    const runSec = parseInt(document.getElementById('pft-run-sec')?.value) || 0;
-    const rowMin = parseInt(document.getElementById('pft-row-min')?.value) || 0;
-    const rowSec = parseInt(document.getElementById('pft-row-sec')?.value) || 0;
-    const isAltitude = document.getElementById('pft-altitude')?.checked || false;
+    if (ageInput) ageInput.value = age;
 
-    const options = {
-      plankSeconds,
-      isAltitude
-    };
+    // Recalculate scores with new age
+    this.calculateScores();
+    this.calculateCFTScores();
 
+    return age;
+  },
+
+  /**
+   * Get current age (from input or DOB calculation)
+   */
+  getCurrentAge() {
+    const ageInput = document.getElementById('marine-age');
+    if (ageInput && ageInput.value) {
+      return parseInt(ageInput.value);
+    }
+    return this.calculateAge() || 21;
+  },
+
+  /**
+   * Get current gender
+   */
+  getCurrentGender() {
+    const genderInput = document.getElementById('marine-gender');
+    return genderInput ? genderInput.value : 'male';
+  },
+
+  /**
+   * Update upper body event visibility
+   */
+  updateUpperEvent() {
+    const isPullups = document.querySelector('input[name="upper-event"][value="pullups"]').checked;
+    document.getElementById('pullups-input').classList.toggle('hidden', !isPullups);
+    document.getElementById('pushups-input').classList.toggle('hidden', isPullups);
+    this.calculateScores();
+  },
+
+  /**
+   * Update cardio event visibility
+   */
+  updateCardioEvent() {
+    const isRun = document.querySelector('input[name="cardio-event"][value="run"]').checked;
+    document.getElementById('run-input').classList.toggle('hidden', !isRun);
+    document.getElementById('row-input').classList.toggle('hidden', isRun);
+    this.calculateScores();
+  },
+
+  /**
+   * Calculate PFT scores in real-time
+   */
+  calculateScores() {
+    const gender = this.getCurrentGender();
+    const age = this.getCurrentAge();
+    const ageBracket = ScoringTables.getAgeBracket(age);
+
+    // Upper body
+    const isPullups = document.querySelector('input[name="upper-event"][value="pullups"]').checked;
+    let upperScore = 0;
     if (isPullups) {
-      options.pullups = pullups;
+      const pullups = parseInt(document.getElementById('marine-pullups').value) || 0;
+      upperScore = Calculator.calculatePullups(gender, ageBracket, pullups);
     } else {
-      options.pushups = pushups;
+      const pushups = parseInt(document.getElementById('marine-pushups').value) || 0;
+      upperScore = Calculator.calculatePushups(gender, ageBracket, pushups);
     }
+    document.getElementById('upper-score').textContent = `${upperScore} pts`;
 
-    if (isRow) {
-      options.isRow = true;
-      options.rowSeconds = (rowMin * 60) + rowSec;
+    // Plank
+    const plankMin = parseInt(document.getElementById('marine-plank-min').value) || 0;
+    const plankSec = parseInt(document.getElementById('marine-plank-sec').value) || 0;
+    const plankSeconds = (plankMin * 60) + plankSec;
+    const plankScore = Calculator.calculatePlank(plankSeconds);
+    document.getElementById('plank-score').textContent = `${plankScore} pts`;
+
+    // Cardio
+    const isRun = document.querySelector('input[name="cardio-event"][value="run"]').checked;
+    const isAltitude = document.getElementById('marine-altitude').checked;
+    let cardioScore = 0;
+
+    if (isRun) {
+      const runMin = parseInt(document.getElementById('marine-run-min').value) || 0;
+      const runSec = parseInt(document.getElementById('marine-run-sec').value) || 0;
+      const runSeconds = (runMin * 60) + runSec;
+      if (runSeconds > 0) {
+        cardioScore = Calculator.calculateRun(gender, ageBracket, runSeconds, isAltitude);
+      }
     } else {
-      options.runSeconds = (runMin * 60) + runSec;
+      const rowMin = parseInt(document.getElementById('marine-row-min').value) || 0;
+      const rowSec = parseInt(document.getElementById('marine-row-sec').value) || 0;
+      const rowSeconds = (rowMin * 60) + rowSec;
+      if (rowSeconds > 0) {
+        cardioScore = Calculator.calculateRow(gender, ageBracket, rowSeconds);
+      }
     }
+    document.getElementById('cardio-score').textContent = `${cardioScore} pts`;
 
-    const result = Calculator.calculatePFTScore(gender, age, options);
-    this.displayPFTResult(result);
-  },
+    // Total
+    const total = upperScore + plankScore + cardioScore;
+    document.getElementById('pft-total').textContent = total;
 
-  /**
-   * Display PFT result
-   */
-  displayPFTResult(result) {
-    // Event scores
-    document.getElementById('pft-upper-score').textContent = result.upperBody.score;
-    document.getElementById('pft-core-score').textContent = result.core.score;
-    document.getElementById('pft-cardio-score').textContent = result.cardio.score;
-
-    // Total and classification
-    const totalEl = document.getElementById('pft-total');
+    // Classification
+    const classification = Calculator.getClassification(total);
     const classEl = document.getElementById('pft-class');
+    const hasScores = upperScore > 0 || plankScore > 0 || cardioScore > 0;
 
-    if (totalEl) totalEl.textContent = result.total;
-    if (classEl) {
-      classEl.textContent = result.classification;
-      classEl.className = 'score-display__class';
-      if (result.classification === '1st Class') classEl.classList.add('score-display__class--first');
-      else if (result.classification === '2nd Class') classEl.classList.add('score-display__class--second');
-      else if (result.classification === '3rd Class') classEl.classList.add('score-display__class--third');
-      else classEl.classList.add('score-display__class--fail');
-    }
-  },
-
-  /**
-   * Reset PFT form
-   */
-  resetPFTForm() {
-    document.getElementById('pft-form')?.reset();
-    document.getElementById('pft-pullup-group')?.classList.remove('hidden');
-    document.getElementById('pft-pushup-group')?.classList.add('hidden');
-    document.getElementById('pft-run-group')?.classList.remove('hidden');
-    document.getElementById('pft-row-group')?.classList.add('hidden');
-    this.calculatePFT();
-    DraftStorage.clearDraft('pft');
-  },
-
-  /**
-   * Set up CFT form
-   */
-  setupCFTForm() {
-    const form = document.getElementById('cft-form');
-    if (!form) return;
-
-    const inputs = form.querySelectorAll('input, select');
-    inputs.forEach(input => {
-      input.addEventListener('input', () => this.calculateCFT());
-      input.addEventListener('change', () => this.calculateCFT());
-    });
-
-    const resetBtn = document.getElementById('cft-reset');
-    if (resetBtn) {
-      resetBtn.addEventListener('click', () => this.resetCFTForm());
-    }
-  },
-
-  /**
-   * Calculate and display CFT score
-   */
-  calculateCFT() {
-    const gender = document.getElementById('cft-gender')?.value || 'male';
-    const age = parseInt(document.getElementById('cft-age')?.value) || 21;
-
-    const mtcMin = parseInt(document.getElementById('cft-mtc-min')?.value) || 0;
-    const mtcSec = parseInt(document.getElementById('cft-mtc-sec')?.value) || 0;
-    const ammoLifts = parseInt(document.getElementById('cft-ammo')?.value) || 0;
-    const manufMin = parseInt(document.getElementById('cft-manuf-min')?.value) || 0;
-    const manufSec = parseInt(document.getElementById('cft-manuf-sec')?.value) || 0;
-    const isAltitude = document.getElementById('cft-altitude')?.checked || false;
-
-    const result = Calculator.calculateCFTScore(gender, age, {
-      mtcSeconds: (mtcMin * 60) + mtcSec,
-      ammoLifts,
-      manufSeconds: (manufMin * 60) + manufSec,
-      isAltitude
-    });
-
-    this.displayCFTResult(result);
-  },
-
-  /**
-   * Display CFT result
-   */
-  displayCFTResult(result) {
-    document.getElementById('cft-mtc-score').textContent = result.mtc.score;
-    document.getElementById('cft-al-score').textContent = result.al.score;
-    document.getElementById('cft-manuf-score').textContent = result.manuf.score;
-
-    const totalEl = document.getElementById('cft-total');
-    const classEl = document.getElementById('cft-class');
-
-    if (totalEl) totalEl.textContent = result.total;
-    if (classEl) {
-      classEl.textContent = result.classification;
-      classEl.className = 'score-display__class';
-      if (result.classification === '1st Class') classEl.classList.add('score-display__class--first');
-      else if (result.classification === '2nd Class') classEl.classList.add('score-display__class--second');
-      else if (result.classification === '3rd Class') classEl.classList.add('score-display__class--third');
-      else classEl.classList.add('score-display__class--fail');
-    }
-  },
-
-  /**
-   * Reset CFT form
-   */
-  resetCFTForm() {
-    document.getElementById('cft-form')?.reset();
-    this.calculateCFT();
-    DraftStorage.clearDraft('cft');
-  },
-
-  /**
-   * Set up BCP form
-   */
-  setupBCPForm() {
-    const form = document.getElementById('bcp-form');
-    if (!form) return;
-
-    const genderSelect = document.getElementById('bcp-gender');
-    const hipsGroup = document.getElementById('bcp-hips-group');
-
-    // Show/hide hips field based on gender
-    genderSelect?.addEventListener('change', () => {
-      if (genderSelect.value === 'female') {
-        hipsGroup?.classList.remove('hidden');
-      } else {
-        hipsGroup?.classList.add('hidden');
-      }
-    });
-
-    const inputs = form.querySelectorAll('input, select');
-    inputs.forEach(input => {
-      input.addEventListener('input', () => this.calculateBCP());
-      input.addEventListener('change', () => this.calculateBCP());
-    });
-
-    const resetBtn = document.getElementById('bcp-reset');
-    if (resetBtn) {
-      resetBtn.addEventListener('click', () => this.resetBCPForm());
-    }
-  },
-
-  /**
-   * Calculate and display BCP assessment
-   */
-  calculateBCP() {
-    const gender = document.getElementById('bcp-gender')?.value || 'male';
-    const age = parseInt(document.getElementById('bcp-age')?.value) || 21;
-    const height = parseFloat(document.getElementById('bcp-height')?.value) || 70;
-    const weight = parseFloat(document.getElementById('bcp-weight')?.value) || 0;
-    const neck = parseFloat(document.getElementById('bcp-neck')?.value) || 0;
-    const abdomen = parseFloat(document.getElementById('bcp-abdomen')?.value) || 0;
-    const hips = parseFloat(document.getElementById('bcp-hips')?.value) || 0;
-
-    const result = BodyFat.assessBCP(gender, age, height, weight, neck, abdomen, hips);
-    this.displayBCPResult(result);
-  },
-
-  /**
-   * Display BCP result
-   */
-  displayBCPResult(result) {
-    const resultDiv = document.getElementById('bcp-result');
-    if (!resultDiv) return;
-
-    if (result.error) {
-      resultDiv.innerHTML = `<div class="alert alert--error">${result.error}</div>`;
-      return;
-    }
-
-    let html = '';
-
-    // Weight standard result
-    html += `
-      <div class="result-box ${result.weightCheck.withinStandard ? 'result-box--pass' : 'result-box--fail'}">
-        <div class="result-box__value">${result.weightCheck.withinStandard ? 'WITHIN' : 'OVER'}</div>
-        <div class="result-box__label">Weight Standard</div>
-        <div class="text-sm mt-2">Max: ${result.weightCheck.maxWeight} lbs | Actual: ${result.weightCheck.actualWeight} lbs</div>
-        ${result.weightCheck.overBy > 0 ? `<div class="text-sm text-error">Over by ${result.weightCheck.overBy} lbs</div>` : ''}
-      </div>
-    `;
-
-    // Body fat result (if tape test required)
-    if (result.requiresTape && result.bodyFatCheck) {
-      html += `
-        <div class="result-box ${result.bodyFatCheck.withinStandard ? 'result-box--pass' : 'result-box--fail'} mt-4">
-          <div class="result-box__value">${result.bodyFatCheck.bodyFatPercent}%</div>
-          <div class="result-box__label">Body Fat</div>
-          <div class="text-sm mt-2">Max Allowed: ${result.bodyFatCheck.maxAllowed}%</div>
-          <div class="text-sm">Circumference Value: ${result.bodyFatCheck.circumferenceValue}"</div>
-        </div>
-      `;
-    }
-
-    // Overall status
-    html += `
-      <div class="result-box ${result.overallStatus === 'PASS' ? 'result-box--pass' : 'result-box--fail'} mt-4">
-        <div class="result-box__value">${result.overallStatus}</div>
-        <div class="result-box__label">Overall BCP Status</div>
-        <div class="text-sm mt-2">${result.message}</div>
-      </div>
-    `;
-
-    resultDiv.innerHTML = html;
-  },
-
-  /**
-   * Reset BCP form
-   */
-  resetBCPForm() {
-    document.getElementById('bcp-form')?.reset();
-    document.getElementById('bcp-hips-group')?.classList.add('hidden');
-    document.getElementById('bcp-result').innerHTML = '';
-    DraftStorage.clearDraft('bcp');
-  },
-
-  /**
-   * Set up Proctor form
-   */
-  setupProctorForm() {
-    const form = document.getElementById('proctor-form');
-    if (!form) return;
-
-    // Test type toggle
-    const pftRadio = document.getElementById('proctor-pft-radio');
-    const cftRadio = document.getElementById('proctor-cft-radio');
-    const pftEvents = document.getElementById('proctor-pft-events');
-    const cftEvents = document.getElementById('proctor-cft-events');
-
-    pftRadio?.addEventListener('change', () => {
-      pftEvents?.classList.remove('hidden');
-      cftEvents?.classList.add('hidden');
-      SessionStorage.updateSessionInfo({ testType: 'pft' });
-    });
-
-    cftRadio?.addEventListener('change', () => {
-      pftEvents?.classList.add('hidden');
-      cftEvents?.classList.remove('hidden');
-      SessionStorage.updateSessionInfo({ testType: 'cft' });
-    });
-
-    // Upper body event toggle (within proctor PFT)
-    const proctorPullupRadio = document.getElementById('proctor-pullups-radio');
-    const proctorPushupRadio = document.getElementById('proctor-pushups-radio');
-
-    proctorPullupRadio?.addEventListener('change', () => {
-      document.getElementById('proctor-pullup-group')?.classList.remove('hidden');
-      document.getElementById('proctor-pushup-group')?.classList.add('hidden');
-    });
-
-    proctorPushupRadio?.addEventListener('change', () => {
-      document.getElementById('proctor-pullup-group')?.classList.add('hidden');
-      document.getElementById('proctor-pushup-group')?.classList.remove('hidden');
-    });
-
-    // Add Marine button
-    const addBtn = document.getElementById('proctor-add');
-    addBtn?.addEventListener('click', () => this.addMarineToSession());
-
-    // Generate PDF button
-    const pdfBtn = document.getElementById('proctor-pdf');
-    pdfBtn?.addEventListener('click', () => this.generateSessionPDF());
-
-    // Clear session button
-    const clearBtn = document.getElementById('proctor-clear');
-    clearBtn?.addEventListener('click', () => {
-      if (confirm('Clear all Marines from this session?')) {
-        SessionStorage.clearSession();
-        this.refreshSessionList();
-      }
-    });
-
-    // Unit and date changes
-    const unitInput = document.getElementById('proctor-unit');
-    const dateInput = document.getElementById('proctor-date');
-
-    unitInput?.addEventListener('change', () => {
-      SessionStorage.updateSessionInfo({ unit: unitInput.value });
-    });
-
-    dateInput?.addEventListener('change', () => {
-      SessionStorage.updateSessionInfo({ date: dateInput.value });
-    });
-  },
-
-  /**
-   * Add Marine to session
-   */
-  addMarineToSession() {
-    const session = SessionStorage.getSession();
-    const isPFT = document.getElementById('proctor-pft-radio')?.checked;
-
-    // Get Marine info
-    const name = document.getElementById('proctor-name')?.value?.trim();
-    const rank = document.getElementById('proctor-rank')?.value;
-    const edipi = document.getElementById('proctor-edipi')?.value?.trim();
-    const dob = document.getElementById('proctor-dob')?.value;
-    const gender = document.getElementById('proctor-gender')?.value || 'male';
-
-    if (!name) {
-      alert('Please enter Marine name');
-      return;
-    }
-
-    // Calculate age from DOB
-    let age = 21;
-    if (dob) {
-      const today = new Date();
-      const birth = new Date(dob);
-      age = today.getFullYear() - birth.getFullYear();
-      const m = today.getMonth() - birth.getMonth();
-      if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
-        age--;
-      }
-    }
-
-    let results, rawScores;
-
-    if (isPFT) {
-      const isPullups = document.getElementById('proctor-pullups-radio')?.checked;
-      const pullups = parseInt(document.getElementById('proctor-pullups')?.value) || 0;
-      const pushups = parseInt(document.getElementById('proctor-pushups')?.value) || 0;
-      const plankMin = parseInt(document.getElementById('proctor-plank-min')?.value) || 0;
-      const plankSec = parseInt(document.getElementById('proctor-plank-sec')?.value) || 0;
-      const runMin = parseInt(document.getElementById('proctor-run-min')?.value) || 0;
-      const runSec = parseInt(document.getElementById('proctor-run-sec')?.value) || 0;
-      const isAltitude = document.getElementById('proctor-pft-altitude')?.checked || false;
-
-      const options = {
-        plankSeconds: (plankMin * 60) + plankSec,
-        runSeconds: (runMin * 60) + runSec,
-        isAltitude
-      };
-
-      if (isPullups) {
-        options.pullups = pullups;
-        rawScores = {
-          upperBody: `${pullups} pull-ups`,
-          plank: `${plankMin}:${String(plankSec).padStart(2, '0')}`,
-          cardio: `${runMin}:${String(runSec).padStart(2, '0')}`
-        };
-      } else {
-        options.pushups = pushups;
-        rawScores = {
-          upperBody: `${pushups} push-ups`,
-          plank: `${plankMin}:${String(plankSec).padStart(2, '0')}`,
-          cardio: `${runMin}:${String(runSec).padStart(2, '0')}`
-        };
-      }
-
-      results = Calculator.calculatePFTScore(gender, age, options);
+    if (hasScores) {
+      classEl.textContent = `${classification.class} (Grade: ${classification.grade})`;
     } else {
-      const mtcMin = parseInt(document.getElementById('proctor-mtc-min')?.value) || 0;
-      const mtcSec = parseInt(document.getElementById('proctor-mtc-sec')?.value) || 0;
-      const ammoLifts = parseInt(document.getElementById('proctor-ammo')?.value) || 0;
-      const manufMin = parseInt(document.getElementById('proctor-manuf-min')?.value) || 0;
-      const manufSec = parseInt(document.getElementById('proctor-manuf-sec')?.value) || 0;
-      const isAltitude = document.getElementById('proctor-cft-altitude')?.checked || false;
-
-      rawScores = {
-        mtc: `${mtcMin}:${String(mtcSec).padStart(2, '0')}`,
-        ammoLift: `${ammoLifts} lifts`,
-        manuf: `${manufMin}:${String(manufSec).padStart(2, '0')}`
-      };
-
-      results = Calculator.calculateCFTScore(gender, age, {
-        mtcSeconds: (mtcMin * 60) + mtcSec,
-        ammoLifts,
-        manufSeconds: (manufMin * 60) + manufSec,
-        isAltitude
-      });
+      classEl.textContent = 'Enter scores above';
     }
 
+    // Store current PFT result
+    this.currentPFT = {
+      upperBody: { score: upperScore, isPullups, value: isPullups ?
+        (parseInt(document.getElementById('marine-pullups').value) || 0) :
+        (parseInt(document.getElementById('marine-pushups').value) || 0)
+      },
+      plank: { score: plankScore, time: `${plankMin}:${String(plankSec).padStart(2, '0')}` },
+      cardio: {
+        score: cardioScore,
+        isRun,
+        time: isRun ?
+          `${document.getElementById('marine-run-min').value || 0}:${String(document.getElementById('marine-run-sec').value || 0).padStart(2, '0')}` :
+          `${document.getElementById('marine-row-min').value || 0}:${String(document.getElementById('marine-row-sec').value || 0).padStart(2, '0')}`
+      },
+      total,
+      classification: classification.class,
+      grade: classification.grade
+    };
+  },
+
+  /**
+   * Calculate CFT scores in real-time
+   */
+  calculateCFTScores() {
+    const gender = this.getCurrentGender();
+    const age = this.getCurrentAge();
+    const ageBracket = ScoringTables.getAgeBracket(age);
+    const isAltitude = document.getElementById('marine-cft-altitude').checked;
+
+    // MTC
+    const mtcMin = parseInt(document.getElementById('marine-mtc-min').value) || 0;
+    const mtcSec = parseInt(document.getElementById('marine-mtc-sec').value) || 0;
+    const mtcSeconds = (mtcMin * 60) + mtcSec;
+    const mtcScore = mtcSeconds > 0 ? Calculator.calculateMTC(gender, ageBracket, mtcSeconds, isAltitude) : 0;
+    document.getElementById('mtc-score').textContent = `${mtcScore} pts`;
+
+    // Ammo Lift
+    const alReps = parseInt(document.getElementById('marine-al').value) || 0;
+    const alScore = Calculator.calculateAmmoLift(gender, ageBracket, alReps);
+    document.getElementById('al-score').textContent = `${alScore} pts`;
+
+    // MANUF
+    const manufMin = parseInt(document.getElementById('marine-manuf-min').value) || 0;
+    const manufSec = parseInt(document.getElementById('marine-manuf-sec').value) || 0;
+    const manufSeconds = (manufMin * 60) + manufSec;
+    const manufScore = manufSeconds > 0 ? Calculator.calculateMANUF(gender, ageBracket, manufSeconds, isAltitude) : 0;
+    document.getElementById('manuf-score').textContent = `${manufScore} pts`;
+
+    // Total
+    const total = mtcScore + alScore + manufScore;
+    document.getElementById('cft-total').textContent = total;
+
+    // Classification
+    const classification = Calculator.getClassification(total);
+    const classEl = document.getElementById('cft-class');
+    const hasScores = mtcScore > 0 || alScore > 0 || manufScore > 0;
+
+    if (hasScores) {
+      const passStatus = total >= 150 ? 'PASS' : 'FAIL';
+      classEl.textContent = `${classification.class} - ${passStatus}`;
+    } else {
+      classEl.textContent = 'Enter scores above';
+    }
+
+    // Store current CFT result
+    this.currentCFT = {
+      mtc: { score: mtcScore, time: `${mtcMin}:${String(mtcSec).padStart(2, '0')}` },
+      al: { score: alScore, reps: alReps },
+      manuf: { score: manufScore, time: `${manufMin}:${String(manufSec).padStart(2, '0')}` },
+      total,
+      classification: classification.class,
+      passStatus: total >= 150 ? 'PASS' : 'FAIL'
+    };
+  },
+
+  /**
+   * Add current Marine to worksheet
+   */
+  addMarineToWorksheet() {
+    // Validate required fields
+    const lastName = document.getElementById('marine-lastname').value.trim();
+    const firstName = document.getElementById('marine-firstname').value.trim();
+
+    if (!lastName || !firstName) {
+      alert('Please enter Marine name (First and Last name required)');
+      return;
+    }
+
+    const age = this.getCurrentAge();
+    if (!age || age < 17) {
+      alert('Please enter a valid Date of Birth');
+      return;
+    }
+
+    // Collect all marine data
     const marine = {
-      name,
-      rank,
-      edipi,
-      dob,
+      id: Date.now().toString(),
+      rank: document.getElementById('marine-rank').value,
+      firstName,
+      lastName,
+      mi: document.getElementById('marine-mi').value.trim().toUpperCase(),
+      edipi: document.getElementById('marine-edipi').value.trim(),
+      dob: document.getElementById('marine-dob').value,
       age,
-      gender,
-      rawScores,
-      results
+      gender: this.getCurrentGender(),
+      height: document.getElementById('marine-height').value,
+      weight: document.getElementById('marine-weight').value,
+
+      // PFT Data
+      pullUps: this.currentPFT?.upperBody.isPullups ? this.currentPFT.upperBody.value : '',
+      pullUpsScore: this.currentPFT?.upperBody.isPullups ? this.currentPFT.upperBody.score : '',
+      pushUps: !this.currentPFT?.upperBody.isPullups ? this.currentPFT.upperBody.value : '',
+      pushUpsScore: !this.currentPFT?.upperBody.isPullups ? this.currentPFT.upperBody.score : '',
+      plankTime: this.currentPFT?.plank.time,
+      plankScore: this.currentPFT?.plank.score,
+      runTime: this.currentPFT?.cardio.isRun ? this.currentPFT.cardio.time : '',
+      runScore: this.currentPFT?.cardio.isRun ? this.currentPFT.cardio.score : '',
+      rowTime: !this.currentPFT?.cardio.isRun ? this.currentPFT.cardio.time : '',
+      rowScore: !this.currentPFT?.cardio.isRun ? this.currentPFT.cardio.score : '',
+      pftTotal: this.currentPFT?.total || 0,
+
+      // CFT Data
+      mtcTime: this.currentCFT?.mtc.time,
+      mtcScore: this.currentCFT?.mtc.score,
+      alReps: this.currentCFT?.al.reps,
+      alScore: this.currentCFT?.al.score,
+      manufTime: this.currentCFT?.manuf.time,
+      manufScore: this.currentCFT?.manuf.score,
+      cftTotal: this.currentCFT?.total || 0,
+      cftPassFail: this.currentCFT?.passStatus || ''
     };
 
-    SessionStorage.addMarine(marine);
-    this.refreshSessionList();
-    this.clearProctorMarineForm();
+    this.marines.push(marine);
+    this.saveSession();
+    this.renderMarinesList();
+    this.clearMarineForm();
   },
 
   /**
-   * Clear Marine form (keep session info)
+   * Render the marines list
    */
-  clearProctorMarineForm() {
-    document.getElementById('proctor-name').value = '';
-    document.getElementById('proctor-edipi').value = '';
-    document.getElementById('proctor-dob').value = '';
-    document.getElementById('proctor-pullups').value = '';
-    document.getElementById('proctor-pushups').value = '';
-    document.getElementById('proctor-plank-min').value = '';
-    document.getElementById('proctor-plank-sec').value = '';
-    document.getElementById('proctor-run-min').value = '';
-    document.getElementById('proctor-run-sec').value = '';
-    document.getElementById('proctor-mtc-min').value = '';
-    document.getElementById('proctor-mtc-sec').value = '';
-    document.getElementById('proctor-ammo').value = '';
-    document.getElementById('proctor-manuf-min').value = '';
-    document.getElementById('proctor-manuf-sec').value = '';
-  },
+  renderMarinesList() {
+    const listEl = document.getElementById('marines-list');
+    const countEl = document.getElementById('marine-count');
+    const generateBtn = document.getElementById('generate-btn');
+    const clearAllBtn = document.getElementById('clear-all-btn');
 
-  /**
-   * Refresh session list display
-   */
-  refreshSessionList() {
-    const session = SessionStorage.getSession();
-    const listEl = document.getElementById('session-list');
-    const countEl = document.getElementById('session-count');
+    countEl.textContent = this.marines.length;
 
-    if (countEl) {
-      countEl.textContent = session.marines.length;
-    }
+    // Enable/disable buttons
+    generateBtn.disabled = this.marines.length === 0;
+    clearAllBtn.disabled = this.marines.length === 0;
 
-    if (!listEl) return;
-
-    if (session.marines.length === 0) {
-      listEl.innerHTML = '<p class="text-secondary text-sm">No Marines added yet</p>';
+    if (this.marines.length === 0) {
+      listEl.innerHTML = '<p class="text-secondary text-center p-4">No Marines added yet. Fill out the form above and click "Add Marine to Worksheet".</p>';
       return;
     }
 
     let html = '';
-    session.marines.forEach(marine => {
+    this.marines.forEach((marine, index) => {
+      const pftClass = Calculator.getClassification(marine.pftTotal).class;
+      const cftClass = Calculator.getClassification(marine.cftTotal).class;
+
       html += `
-        <div class="session-item">
-          <div class="session-item__info">
-            <div class="session-item__name">${marine.rank} ${marine.name}</div>
-            <div class="session-item__details">Score: ${marine.results.total} - ${marine.results.classification}</div>
+        <div class="marine-row">
+          <div>
+            <div class="marine-row__info">${marine.rank} ${marine.lastName}, ${marine.firstName} ${marine.mi}</div>
+            <div class="marine-row__details">EDIPI: ${marine.edipi || 'N/A'} | Age: ${marine.age} | ${marine.gender === 'male' ? 'M' : 'F'}</div>
           </div>
-          <div class="session-item__actions">
+          <div class="text-center">
+            <div class="font-bold ${marine.pftTotal >= 235 ? 'text-success' : marine.pftTotal >= 150 ? '' : 'text-error'}">${marine.pftTotal}</div>
+            <div class="text-xs text-secondary">PFT</div>
+          </div>
+          <div class="text-center">
+            <div class="font-bold ${marine.cftTotal >= 235 ? 'text-success' : marine.cftTotal >= 150 ? '' : 'text-error'}">${marine.cftTotal || '--'}</div>
+            <div class="text-xs text-secondary">CFT</div>
+          </div>
+          <div>
             <button class="btn btn--sm btn--ghost" onclick="App.removeMarine('${marine.id}')">Remove</button>
           </div>
         </div>
@@ -613,44 +362,101 @@ const App = {
     });
 
     listEl.innerHTML = html;
-
-    // Update session info fields
-    const unitInput = document.getElementById('proctor-unit');
-    const dateInput = document.getElementById('proctor-date');
-    if (unitInput && session.unit) unitInput.value = session.unit;
-    if (dateInput && session.date) dateInput.value = session.date;
   },
 
   /**
-   * Remove Marine from session
+   * Remove a Marine from the worksheet
    */
-  removeMarine(marineId) {
-    SessionStorage.removeMarine(marineId);
-    this.refreshSessionList();
+  removeMarine(id) {
+    this.marines = this.marines.filter(m => m.id !== id);
+    this.saveSession();
+    this.renderMarinesList();
   },
 
   /**
-   * Generate session PDF
+   * Clear all Marines
    */
-  generateSessionPDF() {
-    const session = SessionStorage.getSession();
+  clearAllMarines() {
+    if (confirm('Remove all Marines from the worksheet?')) {
+      this.marines = [];
+      this.saveSession();
+      this.renderMarinesList();
+    }
+  },
 
-    if (session.marines.length === 0) {
-      alert('No Marines in session');
+  /**
+   * Clear the Marine input form
+   */
+  clearMarineForm() {
+    document.getElementById('marine-form').reset();
+    document.getElementById('marine-age').value = '';
+    document.getElementById('pullups-input').classList.remove('hidden');
+    document.getElementById('pushups-input').classList.add('hidden');
+    document.getElementById('run-input').classList.remove('hidden');
+    document.getElementById('row-input').classList.add('hidden');
+
+    // Reset score displays
+    document.getElementById('upper-score').textContent = '0 pts';
+    document.getElementById('plank-score').textContent = '0 pts';
+    document.getElementById('cardio-score').textContent = '0 pts';
+    document.getElementById('pft-total').textContent = '0';
+    document.getElementById('pft-class').textContent = 'Enter scores above';
+
+    document.getElementById('mtc-score').textContent = '0 pts';
+    document.getElementById('al-score').textContent = '0 pts';
+    document.getElementById('manuf-score').textContent = '0 pts';
+    document.getElementById('cft-total').textContent = '0';
+    document.getElementById('cft-class').textContent = 'Enter scores above';
+
+    this.currentPFT = null;
+    this.currentCFT = null;
+  },
+
+  /**
+   * Generate NAVMC 11622 PDF
+   */
+  generateNAVMC() {
+    if (this.marines.length === 0) {
+      alert('No Marines in worksheet');
       return;
     }
 
-    const doc = PDFGenerator.generateSessionPDF(session);
-    const testType = session.testType.toUpperCase();
-    const date = session.date.replace(/-/g, '');
-    PDFGenerator.savePDF(doc, `${testType}_Session_${date}.pdf`);
+    const sessionData = {
+      unit: document.getElementById('session-unit').value,
+      date: document.getElementById('session-date').value,
+      monitor: document.getElementById('session-monitor').value,
+      marines: this.marines
+    };
+
+    // Generate and download
+    NAVMCGenerator.downloadPDF(sessionData);
   },
 
   /**
-   * Load drafts from storage
+   * Save session to localStorage
    */
-  loadDrafts() {
-    // Could implement loading saved form state
+  saveSession() {
+    const session = {
+      unit: document.getElementById('session-unit').value,
+      date: document.getElementById('session-date').value,
+      monitor: document.getElementById('session-monitor').value,
+      marines: this.marines
+    };
+    Storage.save('navmc-session', session);
+  },
+
+  /**
+   * Load session from localStorage
+   */
+  loadSession() {
+    const session = Storage.load('navmc-session');
+    if (session) {
+      if (session.unit) document.getElementById('session-unit').value = session.unit;
+      if (session.date) document.getElementById('session-date').value = session.date;
+      if (session.monitor) document.getElementById('session-monitor').value = session.monitor;
+      if (session.marines) this.marines = session.marines;
+      this.renderMarinesList();
+    }
   },
 
   /**
@@ -658,8 +464,19 @@ const App = {
    */
   toggleTheme() {
     ThemeManager.toggle();
+  },
+
+  /**
+   * Quick calculate (for the collapsible quick calculator)
+   */
+  quickCalculate() {
+    // Use values from main form but with quick calc gender/age
+    const gender = document.getElementById('quick-gender').value;
+    const age = parseInt(document.getElementById('quick-age').value) || 21;
+
+    // Just update the displays - the main calculateScores already runs on input
   }
 };
 
-// Initialize app when DOM is ready
+// Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', () => App.init());
