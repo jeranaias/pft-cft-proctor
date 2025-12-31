@@ -3,7 +3,7 @@
  * Enables offline functionality
  */
 
-const CACHE_NAME = 'pft-cft-proctor-v3';
+const CACHE_NAME = 'pft-cft-proctor-v4';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -12,8 +12,12 @@ const urlsToCache = [
   '/js/calculator.js',
   '/js/bodyfat.js',
   '/js/storage.js',
-  '/js/pdf-generator.js',
   '/js/navmc-generator.js',
+  '/js/utils.js',
+  '/js/scoring-calculator.js',
+  '/js/session-manager.js',
+  '/js/form-handler.js',
+  '/js/preview-manager.js',
   '/js/app.js',
   '/manifest.json',
   '/assets/icon-192.svg',
