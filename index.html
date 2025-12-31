@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="USMC PFT/CFT Calculator and Proctor Worksheet - Mobile-first fitness test scoring tool for Marine Corps monitors and Marines">
+  <title>PFT/CFT Proctor - USMC Tools</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#8B0000">
+  <link rel="apple-touch-icon" href="assets/icon-192.svg">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <!-- Skip Link - Accessibility -->
+  <a href="#main" class="skip-link">Skip to main content</a>
+
+  <!-- Header -->
+  <header class="header no-print">
+    <div class="container">
+      <h1 class="header__title">PFT/CFT Proctor</h1>
+      <p class="header__subtitle">Score calculator and proctor worksheet</p>
+      <div class="header__controls">
+        <button id="theme-toggle" class="theme-toggle" onclick="App.toggleTheme()">Light</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main id="main" class="container">
+    <!-- Tab Navigation -->
+    <nav class="tabs no-print" role="tablist">
+      <button class="tab tab--active" data-tab="pft" role="tab" aria-selected="true">PFT</button>
+      <button class="tab" data-tab="cft" role="tab" aria-selected="false">CFT</button>
+      <button class="tab" data-tab="bcp" role="tab" aria-selected="false">HT/WT</button>
+      <button class="tab" data-tab="proctor" role="tab" aria-selected="false">Proctor</button>
+    </nav>
+
+    <!-- PFT Calculator Tab -->
+    <div id="pft-panel" class="tab-panel tab-panel--active" role="tabpanel">
+      <div class="card">
+        <div class="card__header">
+          <h2 class="card__title">PFT Calculator</h2>
+          <p class="card__subtitle">Physical Fitness Test scoring</p>
+        </div>
+
+        <form id="pft-form">
+          <!-- Demographics -->
+          <div class="grid grid--2">
+            <div class="form-group">
+              <label class="label" for="pft-gender">Gender</label>
+              <select id="pft-gender" class="input select">
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="label" for="pft-age">Age</label>
+              <input type="number" id="pft-age" class="input" min="17" max="65" value="21">
+            </div>
+          </div>
+
+          <!-- Upper Body Event -->
+          <div class="form-group">
+            <label class="label">Upper Body Event</label>
+            <div class="radio-group radio-group--horizontal">
+              <label class="radio-label">
+                <input type="radio" id="pft-pullups-radio" name="pft-upper" class="radio" checked>
+                Pull-ups (100 pts max)
+              </label>
+              <label class="radio-label">
+                <input type="radio" id="pft-pushups-radio" name="pft-upper" class="radio">
+                Push-ups (70 pts max)
+              </label>
+            </div>
+          </div>
+
+          <div id="pft-pullup-group" class="form-group">
+            <label class="label" for="pft-pullups">Pull-ups (reps)</label>
+            <input type="number" id="pft-pullups" class="input" min="0" max="50" placeholder="0">
+          </div>
+
+          <div id="pft-pushup-group" class="form-group hidden">
+            <label class="label" for="pft-pushups">Push-ups (reps in 2 min)</label>
+            <input type="number" id="pft-pushups" class="input" min="0" max="150" placeholder="0">
+          </div>
+
+          <!-- Core Event -->
+          <div class="form-group">
+            <label class="label">Plank Time</label>
+            <div class="input-group">
+              <input type="number" id="pft-plank-min" class="input input--time" min="0" max="5" placeholder="0">
+              <span class="input-group__separator">:</span>
+              <input type="number" id="pft-plank-sec" class="input input--time" min="0" max="59" placeholder="00">
+              <span class="text-secondary text-sm">(MM:SS)</span>
+            </div>
+          </div>
+
+          <!-- Cardio Event -->
+          <div class="form-group">
+            <label class="label">Cardio Event</label>
+            <div class="radio-group radio-group--horizontal">
+              <label class="radio-label">
+                <input type="radio" id="pft-run-radio" name="pft-cardio" class="radio" checked>
+                3-Mile Run
+              </label>
+              <label class="radio-label">
+                <input type="radio" id="pft-row-radio" name="pft-cardio" class="radio">
+                5k Row (46+ or waiver)
+              </label>
+            </div>
+          </div>
+
+          <div id="pft-run-group" class="form-group">
+            <label class="label">Run Time</label>
+            <div class="input-group">
+              <input type="number" id="pft-run-min" class="input input--time" min="0" max="45" placeholder="0">
+              <span class="input-group__separator">:</span>
+              <input type="number" id="pft-run-sec" class="input input--time" min="0" max="59" placeholder="00">
+              <span class="text-secondary text-sm">(MM:SS)</span>
+            </div>
+          </div>
+
+          <div id="pft-row-group" class="form-group hidden">
+            <label class="label">Row Time</label>
+            <div class="input-group">
+              <input type="number" id="pft-row-min" class="input input--time" min="0" max="45" placeholder="0">
+              <span class="input-group__separator">:</span>
+              <input type="number" id="pft-row-sec" class="input input--time" min="0" max="59" placeholder="00">
+              <span class="text-secondary text-sm">(MM:SS)</span>
+            </div>
+          </div>
+
+          <!-- Altitude -->
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="pft-altitude" class="checkbox">
+              High Altitude (4,500ft+)
+            </label>
+          </div>
+
+          <!-- Event Scores -->
+          <div class="mt-4">
+            <div class="event-row">
+              <span class="event-row__name">Upper Body</span>
+              <span id="pft-upper-score" class="event-row__score">0</span>
+            </div>
+            <div class="event-row">
+              <span class="event-row__name">Plank</span>
+              <span id="pft-core-score" class="event-row__score">0</span>
+            </div>
+            <div class="event-row">
+              <span class="event-row__name">Cardio</span>
+              <span id="pft-cardio-score" class="event-row__score">0</span>
+            </div>
+          </div>
+
+          <!-- Total Score -->
+          <div class="score-display">
+            <div class="score-display__label">TOTAL SCORE</div>
+            <div id="pft-total" class="score-display__total">0</div>
+            <div id="pft-class" class="score-display__class">--</div>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex justify-between mt-6">
+            <button type="button" id="pft-reset" class="btn btn--outline">Reset</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- CFT Calculator Tab -->
+    <div id="cft-panel" class="tab-panel" role="tabpanel">
+      <div class="card">
+        <div class="card__header">
+          <h2 class="card__title">CFT Calculator</h2>
+          <p class="card__subtitle">Combat Fitness Test scoring</p>
+        </div>
+
+        <form id="cft-form">
+          <!-- Demographics -->
+          <div class="grid grid--2">
+            <div class="form-group">
+              <label class="label" for="cft-gender">Gender</label>
+              <select id="cft-gender" class="input select">
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="label" for="cft-age">Age</label>
+              <input type="number" id="cft-age" class="input" min="17" max="65" value="21">
+            </div>
+          </div>
+
+          <!-- Movement to Contact -->
+          <div class="form-group">
+            <label class="label">Movement to Contact (880 yds)</label>
+            <div class="input-group">
+              <input type="number" id="cft-mtc-min" class="input input--time" min="0" max="10" placeholder="0">
+              <span class="input-group__separator">:</span>
+              <input type="number" id="cft-mtc-sec" class="input input--time" min="0" max="59" placeholder="00">
+              <span class="text-secondary text-sm">(MM:SS)</span>
+            </div>
+          </div>
+
+          <!-- Ammunition Lift -->
+          <div class="form-group">
+            <label class="label" for="cft-ammo">Ammunition Lift (30lb can, 2 min)</label>
+            <input type="number" id="cft-ammo" class="input" min="0" max="200" placeholder="0">
+          </div>
+
+          <!-- Maneuver Under Fire -->
+          <div class="form-group">
+            <label class="label">Maneuver Under Fire (300 yds)</label>
+            <div class="input-group">
+              <input type="number" id="cft-manuf-min" class="input input--time" min="0" max="10" placeholder="0">
+              <span class="input-group__separator">:</span>
+              <input type="number" id="cft-manuf-sec" class="input input--time" min="0" max="59" placeholder="00">
+              <span class="text-secondary text-sm">(MM:SS)</span>
+            </div>
+          </div>
+
+          <!-- Altitude -->
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="cft-altitude" class="checkbox">
+              High Altitude (4,500ft+)
+            </label>
+          </div>
+
+          <!-- Event Scores -->
+          <div class="mt-4">
+            <div class="event-row">
+              <span class="event-row__name">MTC</span>
+              <span id="cft-mtc-score" class="event-row__score">0</span>
+            </div>
+            <div class="event-row">
+              <span class="event-row__name">Ammo Lift</span>
+              <span id="cft-al-score" class="event-row__score">0</span>
+            </div>
+            <div class="event-row">
+              <span class="event-row__name">MANUF</span>
+              <span id="cft-manuf-score" class="event-row__score">0</span>
+            </div>
+          </div>
+
+          <!-- Total Score -->
+          <div class="score-display">
+            <div class="score-display__label">TOTAL SCORE</div>
+            <div id="cft-total" class="score-display__total">0</div>
+            <div id="cft-class" class="score-display__class">--</div>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex justify-between mt-6">
+            <button type="button" id="cft-reset" class="btn btn--outline">Reset</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- BCP/Height-Weight Tab -->
+    <div id="bcp-panel" class="tab-panel" role="tabpanel">
+      <div class="card">
+        <div class="card__header">
+          <h2 class="card__title">Height/Weight & Body Fat</h2>
+          <p class="card__subtitle">Body Composition Program assessment</p>
+        </div>
+
+        <form id="bcp-form">
+          <!-- Demographics -->
+          <div class="grid grid--2">
+            <div class="form-group">
+              <label class="label" for="bcp-gender">Gender</label>
+              <select id="bcp-gender" class="input select">
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="label" for="bcp-age">Age</label>
+              <input type="number" id="bcp-age" class="input" min="17" max="65" value="21">
+            </div>
+          </div>
+
+          <!-- Height/Weight -->
+          <div class="grid grid--2">
+            <div class="form-group">
+              <label class="label" for="bcp-height">Height (inches)</label>
+              <input type="number" id="bcp-height" class="input" min="58" max="80" step="0.5" placeholder="70">
+            </div>
+            <div class="form-group">
+              <label class="label" for="bcp-weight">Weight (lbs)</label>
+              <input type="number" id="bcp-weight" class="input" min="80" max="400" placeholder="180">
+            </div>
+          </div>
+
+          <!-- Tape Measurements -->
+          <div class="alert alert--info mt-4 mb-4">
+            <div>
+              <strong>Tape Test (if over weight standard)</strong><br>
+              Neck: Round UP to nearest 0.5"<br>
+              Abdomen/Hips: Round DOWN to nearest 0.5"
+            </div>
+          </div>
+
+          <div class="grid grid--2">
+            <div class="form-group">
+              <label class="label" for="bcp-neck">Neck (inches)</label>
+              <input type="number" id="bcp-neck" class="input" min="10" max="30" step="0.5" placeholder="15.5">
+              <span class="help-text">At Adam's apple level</span>
+            </div>
+            <div class="form-group">
+              <label class="label" for="bcp-abdomen">Abdomen (inches)</label>
+              <input type="number" id="bcp-abdomen" class="input" min="20" max="60" step="0.5" placeholder="34">
+              <span class="help-text">At navel level</span>
+            </div>
+          </div>
+
+          <div id="bcp-hips-group" class="form-group hidden">
+            <label class="label" for="bcp-hips">Hips (inches) - Females only</label>
+            <input type="number" id="bcp-hips" class="input" min="25" max="60" step="0.5" placeholder="38">
+            <span class="help-text">At widest point</span>
+          </div>
+
+          <!-- Results -->
+          <div id="bcp-result" class="mt-4"></div>
+
+          <!-- Actions -->
+          <div class="flex justify-between mt-6">
+            <button type="button" id="bcp-reset" class="btn btn--outline">Reset</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Proctor Worksheet Tab -->
+    <div id="proctor-panel" class="tab-panel" role="tabpanel">
+      <div class="card">
+        <div class="card__header">
+          <h2 class="card__title">Proctor Worksheet</h2>
+          <p class="card__subtitle">Track multiple Marines in a session</p>
+        </div>
+
+        <form id="proctor-form">
+          <!-- Session Info -->
+          <div class="grid grid--2">
+            <div class="form-group">
+              <label class="label" for="proctor-unit">Unit</label>
+              <input type="text" id="proctor-unit" class="input" placeholder="1/1 H&S Co">
+            </div>
+            <div class="form-group">
+              <label class="label" for="proctor-date">Date</label>
+              <input type="date" id="proctor-date" class="input">
+            </div>
+          </div>
+
+          <!-- Test Type -->
+          <div class="form-group">
+            <label class="label">Test Type</label>
+            <div class="radio-group radio-group--horizontal">
+              <label class="radio-label">
+                <input type="radio" id="proctor-pft-radio" name="proctor-test" class="radio" checked>
+                PFT
+              </label>
+              <label class="radio-label">
+                <input type="radio" id="proctor-cft-radio" name="proctor-test" class="radio">
+                CFT
+              </label>
+            </div>
+          </div>
+
+          <hr style="margin: 1.5rem 0; border-color: var(--border-light);">
+
+          <!-- Marine Info -->
+          <h3 class="text-lg font-semibold mb-4">Add Marine</h3>
+
+          <div class="grid grid--2">
+            <div class="form-group">
+              <label class="label label--required" for="proctor-name">Name (Last, First)</label>
+              <input type="text" id="proctor-name" class="input" placeholder="Smith, John">
+            </div>
+            <div class="form-group">
+              <label class="label" for="proctor-rank">Rank</label>
+              <select id="proctor-rank" class="input select">
+                <option value="Pvt">Pvt</option>
+                <option value="PFC">PFC</option>
+                <option value="LCpl" selected>LCpl</option>
+                <option value="Cpl">Cpl</option>
+                <option value="Sgt">Sgt</option>
+                <option value="SSgt">SSgt</option>
+                <option value="GySgt">GySgt</option>
+                <option value="MSgt">MSgt</option>
+                <option value="1stSgt">1stSgt</option>
+                <option value="MGySgt">MGySgt</option>
+                <option value="SgtMaj">SgtMaj</option>
+                <option value="2ndLt">2ndLt</option>
+                <option value="1stLt">1stLt</option>
+                <option value="Capt">Capt</option>
+                <option value="Maj">Maj</option>
+                <option value="LtCol">LtCol</option>
+                <option value="Col">Col</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid--2">
+            <div class="form-group">
+              <label class="label" for="proctor-edipi">EDIPI</label>
+              <input type="text" id="proctor-edipi" class="input" placeholder="1234567890">
+            </div>
+            <div class="form-group">
+              <label class="label" for="proctor-dob">DOB</label>
+              <input type="date" id="proctor-dob" class="input">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="label" for="proctor-gender">Gender</label>
+            <select id="proctor-gender" class="input select">
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+            </select>
+          </div>
+
+          <!-- PFT Events -->
+          <div id="proctor-pft-events">
+            <h4 class="font-semibold mt-4 mb-2">PFT Events</h4>
+
+            <div class="form-group">
+              <div class="radio-group radio-group--horizontal">
+                <label class="radio-label">
+                  <input type="radio" id="proctor-pullups-radio" name="proctor-upper" class="radio" checked>
+                  Pull-ups
+                </label>
+                <label class="radio-label">
+                  <input type="radio" id="proctor-pushups-radio" name="proctor-upper" class="radio">
+                  Push-ups
+                </label>
+              </div>
+            </div>
+
+            <div id="proctor-pullup-group" class="form-group">
+              <label class="label" for="proctor-pullups">Pull-ups</label>
+              <input type="number" id="proctor-pullups" class="input" min="0" placeholder="0">
+            </div>
+
+            <div id="proctor-pushup-group" class="form-group hidden">
+              <label class="label" for="proctor-pushups">Push-ups</label>
+              <input type="number" id="proctor-pushups" class="input" min="0" placeholder="0">
+            </div>
+
+            <div class="form-group">
+              <label class="label">Plank</label>
+              <div class="input-group">
+                <input type="number" id="proctor-plank-min" class="input input--time" min="0" max="5" placeholder="0">
+                <span class="input-group__separator">:</span>
+                <input type="number" id="proctor-plank-sec" class="input input--time" min="0" max="59" placeholder="00">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="label">3-Mile Run</label>
+              <div class="input-group">
+                <input type="number" id="proctor-run-min" class="input input--time" min="0" max="45" placeholder="0">
+                <span class="input-group__separator">:</span>
+                <input type="number" id="proctor-run-sec" class="input input--time" min="0" max="59" placeholder="00">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="checkbox-label">
+                <input type="checkbox" id="proctor-pft-altitude" class="checkbox">
+                High Altitude
+              </label>
+            </div>
+          </div>
+
+          <!-- CFT Events -->
+          <div id="proctor-cft-events" class="hidden">
+            <h4 class="font-semibold mt-4 mb-2">CFT Events</h4>
+
+            <div class="form-group">
+              <label class="label">Movement to Contact</label>
+              <div class="input-group">
+                <input type="number" id="proctor-mtc-min" class="input input--time" min="0" max="10" placeholder="0">
+                <span class="input-group__separator">:</span>
+                <input type="number" id="proctor-mtc-sec" class="input input--time" min="0" max="59" placeholder="00">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="label" for="proctor-ammo">Ammunition Lift</label>
+              <input type="number" id="proctor-ammo" class="input" min="0" placeholder="0">
+            </div>
+
+            <div class="form-group">
+              <label class="label">Maneuver Under Fire</label>
+              <div class="input-group">
+                <input type="number" id="proctor-manuf-min" class="input input--time" min="0" max="10" placeholder="0">
+                <span class="input-group__separator">:</span>
+                <input type="number" id="proctor-manuf-sec" class="input input--time" min="0" max="59" placeholder="00">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="checkbox-label">
+                <input type="checkbox" id="proctor-cft-altitude" class="checkbox">
+                High Altitude
+              </label>
+            </div>
+          </div>
+
+          <button type="button" id="proctor-add" class="btn btn--primary btn--full mt-4">Add to Session</button>
+
+          <hr style="margin: 1.5rem 0; border-color: var(--border-light);">
+
+          <!-- Session List -->
+          <div class="session-list">
+            <div class="session-list__title">
+              Session (<span id="session-count">0</span> Marines)
+            </div>
+            <div id="session-list">
+              <p class="text-secondary text-sm">No Marines added yet</p>
+            </div>
+          </div>
+
+          <!-- Session Actions -->
+          <div class="flex gap-4 mt-6">
+            <button type="button" id="proctor-pdf" class="btn btn--primary">Generate PDF</button>
+            <button type="button" id="proctor-clear" class="btn btn--outline">Clear Session</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer no-print">
+    <div class="container">
+      <p class="text-sm text-secondary text-center">
+        Free and open source. <a href="https://github.com/jeranaias/pft-cft-proctor">View on GitHub</a>
+      </p>
+      <p class="text-sm text-secondary text-center mt-2">
+        Based on MCO 6100.13A w/CH-4. Not an official DoD product.
+      </p>
+      <p class="text-sm text-secondary text-center mt-4">
+        Part of the <a href="https://jeranaias.github.io/usmc-tools/">USMC Tools</a> suite.
+      </p>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <!-- jsPDF for PDF generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <!-- App Scripts (order matters) -->
+  <script src="js/scoring-tables.js"></script>
+  <script src="js/calculator.js"></script>
+  <script src="js/bodyfat.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/pdf-generator.js"></script>
+  <script src="js/app.js"></script>
+
+  <!-- Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service-worker.js')
+          .then(reg => console.log('SW registered'))
+          .catch(err => console.log('SW registration failed:', err));
+      });
+    }
+  </script>
+</body>
+</html>
