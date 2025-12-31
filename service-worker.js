@@ -3,7 +3,7 @@
  * Enables offline functionality
  */
 
-const CACHE_NAME = 'pft-cft-proctor-v2';
+const CACHE_NAME = 'pft-cft-proctor-v3';
 const urlsToCache = [
   '/',
   '/index.html',

@@ -1,13 +1,17 @@
 /**
  * PFT/CFT Proctor App - NAVMC 11622 Generator
- * Main Application Logic
+ * Main Application Logic - Mobile Optimized
  */
 
 const App = {
   // Marines in the current worksheet
   marines: [],
 
-  // Current calculated scores (for display)
+  // Current event selections
+  upperEvent: 'pullups',
+  cardioEvent: 'run',
+
+  // Current calculated scores
   currentPFT: null,
   currentCFT: null,
 
@@ -46,6 +50,80 @@ const App = {
   },
 
   /**
+   * Toggle collapsible section
+   */
+  toggleSection(sectionId) {
+    const section = document.getElementById(sectionId);
+    if (section) {
+      section.classList.toggle('section--collapsed');
+    }
+  },
+
+  /**
+   * Set upper body event type
+   */
+  setUpperEvent(type) {
+    this.upperEvent = type;
+
+    // Update toggle buttons
+    document.getElementById('btn-pullups').classList.toggle('toggle-btn--active', type === 'pullups');
+    document.getElementById('btn-pushups').classList.toggle('toggle-btn--active', type === 'pushups');
+
+    // Show/hide inputs
+    document.getElementById('pullups-event').classList.toggle('hidden', type !== 'pullups');
+    document.getElementById('pushups-event').classList.toggle('hidden', type !== 'pushups');
+
+    this.calculateScores();
+  },
+
+  /**
+   * Set cardio event type
+   */
+  setCardioEvent(type) {
+    this.cardioEvent = type;
+
+    // Update toggle buttons
+    document.getElementById('btn-run').classList.toggle('toggle-btn--active', type === 'run');
+    document.getElementById('btn-row').classList.toggle('toggle-btn--active', type === 'row');
+
+    // Show/hide inputs
+    document.getElementById('run-event').classList.toggle('hidden', type !== 'run');
+    document.getElementById('row-event').classList.toggle('hidden', type !== 'row');
+
+    this.calculateScores();
+  },
+
+  /**
+   * Adjust count input with +/- buttons
+   */
+  adjustCount(type, delta) {
+    const inputMap = {
+      'pullups': 'marine-pullups',
+      'pushups': 'marine-pushups',
+      'al': 'marine-al'
+    };
+
+    const input = document.getElementById(inputMap[type]);
+    if (!input) return;
+
+    let value = parseInt(input.value) || 0;
+    value = Math.max(0, value + delta);
+
+    // Apply max limits
+    const maxMap = { 'pullups': 50, 'pushups': 150, 'al': 200 };
+    value = Math.min(value, maxMap[type] || 999);
+
+    input.value = value;
+
+    // Trigger recalculation
+    if (type === 'al') {
+      this.calculateCFTScores();
+    } else {
+      this.calculateScores();
+    }
+  },
+
+  /**
    * Calculate age from DOB
    */
   calculateAge() {
@@ -75,7 +153,7 @@ const App = {
   },
 
   /**
-   * Get current age (from input or DOB calculation)
+   * Get current age
    */
   getCurrentAge() {
     const ageInput = document.getElementById('marine-age');
@@ -94,26 +172,6 @@ const App = {
   },
 
   /**
-   * Update upper body event visibility
-   */
-  updateUpperEvent() {
-    const isPullups = document.querySelector('input[name="upper-event"][value="pullups"]').checked;
-    document.getElementById('pullups-input').classList.toggle('hidden', !isPullups);
-    document.getElementById('pushups-input').classList.toggle('hidden', isPullups);
-    this.calculateScores();
-  },
-
-  /**
-   * Update cardio event visibility
-   */
-  updateCardioEvent() {
-    const isRun = document.querySelector('input[name="cardio-event"][value="run"]').checked;
-    document.getElementById('run-input').classList.toggle('hidden', !isRun);
-    document.getElementById('row-input').classList.toggle('hidden', isRun);
-    this.calculateScores();
-  },
-
-  /**
    * Calculate PFT scores in real-time
    */
   calculateScores() {
@@ -122,16 +180,16 @@ const App = {
     const ageBracket = ScoringTables.getAgeBracket(age);
 
     // Upper body
-    const isPullups = document.querySelector('input[name="upper-event"][value="pullups"]').checked;
     let upperScore = 0;
-    if (isPullups) {
+    if (this.upperEvent === 'pullups') {
       const pullups = parseInt(document.getElementById('marine-pullups').value) || 0;
       upperScore = Calculator.calculatePullups(gender, ageBracket, pullups);
+      document.getElementById('pullups-score').textContent = `${upperScore} pts`;
     } else {
       const pushups = parseInt(document.getElementById('marine-pushups').value) || 0;
       upperScore = Calculator.calculatePushups(gender, ageBracket, pushups);
+      document.getElementById('pushups-score').textContent = `${upperScore} pts`;
     }
-    document.getElementById('upper-score').textContent = `${upperScore} pts`;
 
     // Plank
     const plankMin = parseInt(document.getElementById('marine-plank-min').value) || 0;
@@ -141,17 +199,17 @@ const App = {
     document.getElementById('plank-score').textContent = `${plankScore} pts`;
 
     // Cardio
-    const isRun = document.querySelector('input[name="cardio-event"][value="run"]').checked;
     const isAltitude = document.getElementById('marine-altitude').checked;
     let cardioScore = 0;
 
-    if (isRun) {
+    if (this.cardioEvent === 'run') {
       const runMin = parseInt(document.getElementById('marine-run-min').value) || 0;
       const runSec = parseInt(document.getElementById('marine-run-sec').value) || 0;
       const runSeconds = (runMin * 60) + runSec;
       if (runSeconds > 0) {
         cardioScore = Calculator.calculateRun(gender, ageBracket, runSeconds, isAltitude);
       }
+      document.getElementById('run-score').textContent = `${cardioScore} pts`;
     } else {
       const rowMin = parseInt(document.getElementById('marine-row-min').value) || 0;
       const rowSec = parseInt(document.getElementById('marine-row-sec').value) || 0;
@@ -159,12 +217,24 @@ const App = {
       if (rowSeconds > 0) {
         cardioScore = Calculator.calculateRow(gender, ageBracket, rowSeconds);
       }
+      document.getElementById('row-score').textContent = `${cardioScore} pts`;
     }
-    document.getElementById('cardio-score').textContent = `${cardioScore} pts`;
 
     // Total
     const total = upperScore + plankScore + cardioScore;
     document.getElementById('pft-total').textContent = total;
+    document.getElementById('pft-header-score').textContent = `${total} pts`;
+
+    // Update header score color
+    const headerScore = document.getElementById('pft-header-score');
+    headerScore.classList.remove('section__score--success', 'section__score--warning', 'section__score--error');
+    if (total >= 235) {
+      headerScore.classList.add('section__score--success');
+    } else if (total >= 150) {
+      // default color
+    } else if (total > 0) {
+      headerScore.classList.add('section__score--error');
+    }
 
     // Classification
     const classification = Calculator.getClassification(total);
@@ -172,22 +242,25 @@ const App = {
     const hasScores = upperScore > 0 || plankScore > 0 || cardioScore > 0;
 
     if (hasScores) {
-      classEl.textContent = `${classification.class} (Grade: ${classification.grade})`;
+      classEl.textContent = `${classification.class} Class`;
     } else {
       classEl.textContent = 'Enter scores above';
     }
 
     // Store current PFT result
     this.currentPFT = {
-      upperBody: { score: upperScore, isPullups, value: isPullups ?
-        (parseInt(document.getElementById('marine-pullups').value) || 0) :
-        (parseInt(document.getElementById('marine-pushups').value) || 0)
+      upperBody: {
+        score: upperScore,
+        isPullups: this.upperEvent === 'pullups',
+        value: this.upperEvent === 'pullups' ?
+          (parseInt(document.getElementById('marine-pullups').value) || 0) :
+          (parseInt(document.getElementById('marine-pushups').value) || 0)
       },
       plank: { score: plankScore, time: `${plankMin}:${String(plankSec).padStart(2, '0')}` },
       cardio: {
         score: cardioScore,
-        isRun,
-        time: isRun ?
+        isRun: this.cardioEvent === 'run',
+        time: this.cardioEvent === 'run' ?
           `${document.getElementById('marine-run-min').value || 0}:${String(document.getElementById('marine-run-sec').value || 0).padStart(2, '0')}` :
           `${document.getElementById('marine-row-min').value || 0}:${String(document.getElementById('marine-row-sec').value || 0).padStart(2, '0')}`
       },
@@ -228,6 +301,18 @@ const App = {
     // Total
     const total = mtcScore + alScore + manufScore;
     document.getElementById('cft-total').textContent = total;
+    document.getElementById('cft-header-score').textContent = `${total} pts`;
+
+    // Update header score color
+    const headerScore = document.getElementById('cft-header-score');
+    headerScore.classList.remove('section__score--success', 'section__score--warning', 'section__score--error');
+    if (total >= 235) {
+      headerScore.classList.add('section__score--success');
+    } else if (total >= 150) {
+      // default color
+    } else if (total > 0) {
+      headerScore.classList.add('section__score--error');
+    }
 
     // Classification
     const classification = Calculator.getClassification(total);
@@ -236,7 +321,7 @@ const App = {
 
     if (hasScores) {
       const passStatus = total >= 150 ? 'PASS' : 'FAIL';
-      classEl.textContent = `${classification.class} - ${passStatus}`;
+      classEl.textContent = `${classification.class} Class - ${passStatus}`;
     } else {
       classEl.textContent = 'Enter scores above';
     }
@@ -284,6 +369,7 @@ const App = {
       gender: this.getCurrentGender(),
       height: document.getElementById('marine-height').value,
       weight: document.getElementById('marine-weight').value,
+      phaDate: document.getElementById('marine-pha')?.value || '',
 
       // PFT Data
       pullUps: this.currentPFT?.upperBody.isPullups ? this.currentPFT.upperBody.value : '',
@@ -313,6 +399,9 @@ const App = {
     this.saveSession();
     this.renderMarinesList();
     this.clearMarineForm();
+
+    // Scroll to worksheet
+    document.getElementById('worksheet-section').scrollIntoView({ behavior: 'smooth' });
   },
 
   /**
@@ -320,47 +409,46 @@ const App = {
    */
   renderMarinesList() {
     const listEl = document.getElementById('marines-list');
-    const countEl = document.getElementById('marine-count');
-    const generateBtn = document.getElementById('generate-btn');
-    const clearAllBtn = document.getElementById('clear-all-btn');
+    const countBadge = document.getElementById('marine-count-badge');
+    const actionsEl = document.getElementById('worksheet-actions');
 
-    countEl.textContent = this.marines.length;
-
-    // Enable/disable buttons
-    generateBtn.disabled = this.marines.length === 0;
-    clearAllBtn.disabled = this.marines.length === 0;
+    countBadge.textContent = this.marines.length;
+    actionsEl.style.display = this.marines.length > 0 ? 'flex' : 'none';
 
     if (this.marines.length === 0) {
-      listEl.innerHTML = '<p class="text-secondary text-center p-4">No Marines added yet. Fill out the form above and click "Add Marine to Worksheet".</p>';
+      listEl.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-state__icon">&#128221;</div>
+          <div class="empty-state__text">No Marines added yet</div>
+        </div>
+      `;
       return;
     }
 
-    let html = '';
-    this.marines.forEach((marine, index) => {
-      const pftClass = Calculator.getClassification(marine.pftTotal).class;
-      const cftClass = Calculator.getClassification(marine.cftTotal).class;
+    let html = '<table class="marines-table"><thead><tr>';
+    html += '<th>Marine</th><th>PFT</th><th>CFT</th><th></th>';
+    html += '</tr></thead><tbody>';
+
+    this.marines.forEach((marine) => {
+      const pftClass = marine.pftTotal >= 235 ? 'text-success' : marine.pftTotal >= 150 ? '' : 'text-error';
+      const cftClass = marine.cftTotal >= 235 ? 'text-success' : marine.cftTotal >= 150 ? '' : 'text-error';
 
       html += `
-        <div class="marine-row">
-          <div>
-            <div class="marine-row__info">${marine.rank} ${marine.lastName}, ${marine.firstName} ${marine.mi}</div>
-            <div class="marine-row__details">EDIPI: ${marine.edipi || 'N/A'} | Age: ${marine.age} | ${marine.gender === 'male' ? 'M' : 'F'}</div>
-          </div>
-          <div class="text-center">
-            <div class="font-bold ${marine.pftTotal >= 235 ? 'text-success' : marine.pftTotal >= 150 ? '' : 'text-error'}">${marine.pftTotal}</div>
-            <div class="text-xs text-secondary">PFT</div>
-          </div>
-          <div class="text-center">
-            <div class="font-bold ${marine.cftTotal >= 235 ? 'text-success' : marine.cftTotal >= 150 ? '' : 'text-error'}">${marine.cftTotal || '--'}</div>
-            <div class="text-xs text-secondary">CFT</div>
-          </div>
-          <div>
-            <button class="btn btn--sm btn--ghost" onclick="App.removeMarine('${marine.id}')">Remove</button>
-          </div>
-        </div>
+        <tr>
+          <td data-label="Marine">
+            <div class="marine-name">${marine.rank} ${marine.lastName}, ${marine.firstName}</div>
+            <div class="marine-details">${marine.gender === 'male' ? 'M' : 'F'} / ${marine.age}yo</div>
+          </td>
+          <td data-label="PFT" class="font-bold ${pftClass}">${marine.pftTotal}</td>
+          <td data-label="CFT" class="font-bold ${cftClass}">${marine.cftTotal || '--'}</td>
+          <td data-label="">
+            <button class="btn btn--ghost btn--sm" onclick="App.removeMarine('${marine.id}')">Remove</button>
+          </td>
+        </tr>
       `;
     });
 
+    html += '</tbody></table>';
     listEl.innerHTML = html;
   },
 
@@ -390,23 +478,48 @@ const App = {
   clearMarineForm() {
     document.getElementById('marine-form').reset();
     document.getElementById('marine-age').value = '';
-    document.getElementById('pullups-input').classList.remove('hidden');
-    document.getElementById('pushups-input').classList.add('hidden');
-    document.getElementById('run-input').classList.remove('hidden');
-    document.getElementById('row-input').classList.add('hidden');
+
+    // Reset count inputs
+    document.getElementById('marine-pullups').value = '0';
+    document.getElementById('marine-pushups').value = '0';
+    document.getElementById('marine-al').value = '0';
+
+    // Reset time inputs
+    document.getElementById('marine-plank-min').value = '0';
+    document.getElementById('marine-plank-sec').value = '00';
+    document.getElementById('marine-run-min').value = '0';
+    document.getElementById('marine-run-sec').value = '00';
+    document.getElementById('marine-row-min').value = '0';
+    document.getElementById('marine-row-sec').value = '00';
+    document.getElementById('marine-mtc-min').value = '0';
+    document.getElementById('marine-mtc-sec').value = '00';
+    document.getElementById('marine-manuf-min').value = '0';
+    document.getElementById('marine-manuf-sec').value = '00';
+
+    // Reset events to defaults
+    this.setUpperEvent('pullups');
+    this.setCardioEvent('run');
 
     // Reset score displays
-    document.getElementById('upper-score').textContent = '0 pts';
+    document.getElementById('pullups-score').textContent = '0 pts';
+    document.getElementById('pushups-score').textContent = '0 pts';
     document.getElementById('plank-score').textContent = '0 pts';
-    document.getElementById('cardio-score').textContent = '0 pts';
+    document.getElementById('run-score').textContent = '0 pts';
+    document.getElementById('row-score').textContent = '0 pts';
     document.getElementById('pft-total').textContent = '0';
+    document.getElementById('pft-header-score').textContent = '0 pts';
     document.getElementById('pft-class').textContent = 'Enter scores above';
 
     document.getElementById('mtc-score').textContent = '0 pts';
     document.getElementById('al-score').textContent = '0 pts';
     document.getElementById('manuf-score').textContent = '0 pts';
     document.getElementById('cft-total').textContent = '0';
+    document.getElementById('cft-header-score').textContent = '0 pts';
     document.getElementById('cft-class').textContent = 'Enter scores above';
+
+    // Reset checkboxes
+    document.getElementById('marine-altitude').checked = false;
+    document.getElementById('marine-cft-altitude').checked = false;
 
     this.currentPFT = null;
     this.currentCFT = null;
@@ -430,6 +543,53 @@ const App = {
 
     // Generate and download
     NAVMCGenerator.downloadPDF(sessionData);
+  },
+
+  /**
+   * Preview NAVMC 11622 PDF
+   */
+  previewNAVMC() {
+    if (this.marines.length === 0) {
+      alert('No Marines in worksheet');
+      return;
+    }
+
+    const sessionData = {
+      unit: document.getElementById('session-unit').value,
+      date: document.getElementById('session-date').value,
+      monitor: document.getElementById('session-monitor').value,
+      marines: this.marines
+    };
+
+    // Generate PDF and show in modal
+    const doc = NAVMCGenerator.generate(sessionData);
+    const pdfDataUri = doc.output('datauristring');
+
+    const modal = document.getElementById('preview-modal');
+    const content = document.getElementById('preview-content');
+
+    content.innerHTML = `
+      <iframe
+        src="${pdfDataUri}"
+        style="width: 100%; height: 70vh; min-height: 400px; border: 1px solid var(--border-light); border-radius: var(--radius-md);"
+      ></iframe>
+      <div class="flex gap-3 mt-4 justify-center">
+        <button class="btn btn--primary" onclick="App.generateNAVMC(); App.closePreview();">Download PDF</button>
+        <button class="btn btn--outline" onclick="App.closePreview();">Close</button>
+      </div>
+    `;
+
+    modal.classList.remove('hidden');
+    modal.style.display = 'flex';
+  },
+
+  /**
+   * Close preview modal
+   */
+  closePreview() {
+    const modal = document.getElementById('preview-modal');
+    modal.classList.add('hidden');
+    modal.style.display = 'none';
   },
 
   /**
@@ -464,17 +624,6 @@ const App = {
    */
   toggleTheme() {
     ThemeManager.toggle();
-  },
-
-  /**
-   * Quick calculate (for the collapsible quick calculator)
-   */
-  quickCalculate() {
-    // Use values from main form but with quick calc gender/age
-    const gender = document.getElementById('quick-gender').value;
-    const age = parseInt(document.getElementById('quick-age').value) || 21;
-
-    // Just update the displays - the main calculateScores already runs on input
   }
 };
 
