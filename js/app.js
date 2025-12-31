@@ -150,6 +150,7 @@ const App = {
   // Session
   clearAllMarines: () => SessionManager.clearAll(),
   exportSession: () => SessionManager.exportSession(),
+  loadExample: () => SessionManager.loadExampleRoster(),
 
   // Preview
   togglePreview: () => PreviewManager.toggle(),
