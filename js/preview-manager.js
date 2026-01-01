@@ -11,9 +11,10 @@ const PreviewManager = {
   previewEnabled: false,
   previewDebounceTimer: null,
   mobilePreviewUrl: null,
+  currentBlobUrl: null,
 
   // Debounce delay for preview updates
-  DEBOUNCE_DELAY: 500,
+  DEBOUNCE_DELAY: 750,
 
   /**
    * Initialize preview manager
@@ -98,16 +99,36 @@ const PreviewManager = {
       return;
     }
 
-    try {
-      const doc = NAVMCGenerator.generate(sessionData);
-      const pdfDataUri = doc.output('datauristring');
+    const previewFrame = Utils.$('preview-frame');
+    const previewLoading = Utils.$('preview-loading');
 
-      const previewFrame = Utils.$('preview-frame');
+    try {
+      // Show loading spinner
+      if (previewLoading) {
+        previewLoading.style.display = 'flex';
+      }
+
+      const doc = NAVMCGenerator.generate(sessionData);
+      const pdfBlob = doc.output('blob');
+
+      // Revoke old blob URL to prevent memory leaks
+      if (this.currentBlobUrl) {
+        URL.revokeObjectURL(this.currentBlobUrl);
+      }
+
+      // Create new blob URL
+      this.currentBlobUrl = URL.createObjectURL(pdfBlob);
+
       if (previewFrame) {
-        previewFrame.src = pdfDataUri;
+        previewFrame.src = this.currentBlobUrl;
       }
     } catch (e) {
       console.error('Preview generation failed:', e);
+    } finally {
+      // Hide loading spinner
+      if (previewLoading) {
+        previewLoading.style.display = 'none';
+      }
     }
   },
 
