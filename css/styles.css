@@ -232,6 +232,7 @@ body {
   padding: var(--space-6) 0;
   text-align: center;
   box-shadow: var(--shadow-md);
+  position: relative;
 }
 
 .header__title {
@@ -1476,6 +1477,22 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.header-controls .btn {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.header-controls .btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.header-controls .btn.active {
+  background: var(--gold);
+  color: var(--primary-dark);
+  border-color: var(--gold);
 }
 
 .offline-indicator {

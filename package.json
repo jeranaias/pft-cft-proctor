@@ -1,0 +1,24 @@
+{
+  "name": "pft-cft-proctor",
+  "version": "1.0.0",
+  "description": "Mobile-first PFT/CFT calculator and proctor worksheet for USMC fitness test monitoring.",
+  "main": "service-worker.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jeranaias/pft-cft-proctor.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/jeranaias/pft-cft-proctor/issues"
+  },
+  "homepage": "https://github.com/jeranaias/pft-cft-proctor#readme",
+  "dependencies": {
+    "pdf-lib": "^1.17.1"
+  }
+}
