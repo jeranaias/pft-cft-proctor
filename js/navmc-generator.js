@@ -269,11 +269,11 @@ const NAVMCGenerator = {
       const marine = marines[i] || null;
 
       // Draw row cells
-      columns.forEach(col => {
+      columns.forEach((col, colIndex) => {
         doc.rect(col.x, rowY, col.width, rowHeight);
 
         if (marine) {
-          const value = this.getMarineValue(marine, col.label);
+          const value = this.getMarineValue(marine, col.label, colIndex);
           if (value) {
             doc.text(String(value), col.x + col.width / 2, rowY + 4.5, { align: 'center' });
           }
@@ -284,8 +284,11 @@ const NAVMCGenerator = {
 
   /**
    * Get value for a specific column from marine data
+   * @param {Object} marine - Marine data
+   * @param {string} columnLabel - Column label
+   * @param {number} colIndex - Column index for disambiguating "Score" columns
    */
-  getMarineValue(marine, columnLabel) {
+  getMarineValue(marine, columnLabel, colIndex) {
     const label = columnLabel.replace('\n', ' ').trim();
 
     const mapping = {
@@ -298,7 +301,7 @@ const NAVMCGenerator = {
       'Gender': marine.gender === 'male' ? 'M' : 'F',
       'Height': marine.height,
       'Weight': marine.weight,
-      'PHA Date': marine.phaDate,
+      'PHA Date': this.formatPhaDate(marine.phaDate),
       'Pull Ups': marine.pullUps,
       'Push Ups': marine.pushUps,
       'Plank': marine.plankTime,
@@ -311,12 +314,32 @@ const NAVMCGenerator = {
       'Pass/ Fail': marine.cftPassFail
     };
 
-    // Handle score columns
+    // Handle score columns based on position
+    // Column indices: 11=PullUps Score, 13=PushUps Score, 15=Plank Score, 17=Run Score, 19=Row Score
     if (label === 'Score') {
-      return ''; // Scores are handled separately based on position
+      switch (colIndex) {
+        case 11: return marine.pullUpsScore || '';
+        case 13: return marine.pushUpsScore || '';
+        case 15: return marine.plankScore || '';
+        case 17: return marine.runScore || '';
+        case 19: return marine.rowScore || '';
+        default: return '';
+      }
     }
 
     return mapping[label] || '';
+  },
+
+  /**
+   * Format PHA date for display (MM/DD/YY)
+   */
+  formatPhaDate(dateStr) {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const year = String(date.getFullYear()).slice(-2);
+    return `${month}/${day}/${year}`;
   },
 
   /**
