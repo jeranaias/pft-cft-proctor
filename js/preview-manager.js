@@ -50,8 +50,8 @@ const PreviewManager = {
 
     this.previewEnabled = !this.previewEnabled;
 
-    const container = document.querySelector('.main-container');
-    const previewPane = Utils.$('live-preview-pane');
+    const container = Utils.$('mainContainer');
+    const previewPane = Utils.$('livePreviewPane');
     const toggleBtn = Utils.$('preview-toggle');
 
     if (this.previewEnabled) {

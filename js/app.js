@@ -22,9 +22,10 @@ function setTheme(theme) {
 }
 
 function updateThemeButton(theme) {
-  const btn = Utils.$('theme-toggle');
-  if (btn) {
-    btn.textContent = theme === 'dark' ? '☀ Light' : '☽ Dark';
+  const icon = Utils.$('themeIcon');
+  if (icon) {
+    // Sun for dark mode (click to go light), Moon for light mode (click to go dark)
+    icon.innerHTML = theme === 'dark' ? '&#9788;' : '&#9789;';
   }
 }
 

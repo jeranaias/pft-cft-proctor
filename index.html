@@ -20,28 +20,40 @@
   <!-- Skip Link -->
   <a href="#main" class="skip-link">Skip to main content</a>
 
-  <!-- Header -->
-  <header class="header no-print">
-    <div class="header-profile">
-      <div id="offline-indicator" class="offline-indicator">
+  <!-- Live Preview Pane -->
+  <div id="livePreviewPane" class="live-preview-pane">
+    <div class="preview-header">
+      <span>Live Preview</span>
+      <button type="button" class="preview-close" onclick="App.togglePreview()" aria-label="Close preview">&times;</button>
+    </div>
+    <div id="preview-loading" class="preview-loading">
+      <div class="spinner"></div>
+      <span>Generating preview...</span>
+    </div>
+    <iframe id="preview-frame" class="preview-frame" title="PDF Preview"></iframe>
+  </div>
+
+  <!-- Main Container -->
+  <div class="container" id="mainContainer">
+    <!-- Header -->
+    <header class="no-print">
+      <div class="header-controls">
+        <button id="preview-toggle" type="button" class="header-btn" onclick="App.togglePreview()" title="Ctrl+L">
+          Live Preview
+        </button>
+        <button id="theme-toggle" type="button" class="header-btn" onclick="App.toggleTheme()">
+          <span id="themeIcon">&#9789;</span>
+        </button>
+      </div>
+      <h1>NAVMC 11622</h1>
+      <p class="subtitle">PFT/CFT Performance Worksheet Generator</p>
+      <div id="offline-indicator" class="offline-badge">
         <span class="indicator-dot"></span>
         <span class="indicator-text">Checking...</span>
       </div>
-    </div>
-    <div class="container">
-      <h1 class="header__title">NAVMC 11622</h1>
-      <p class="header__subtitle">PFT/CFT Performance Worksheet Generator</p>
-    </div>
-    <div class="header-controls">
-      <button id="preview-toggle" class="btn btn--sm" onclick="App.togglePreview()" title="Ctrl+L">Live Preview</button>
-      <button id="theme-toggle" class="theme-toggle" onclick="App.toggleTheme()">☽ Dark</button>
-    </div>
-  </header>
+    </header>
 
-  <!-- Main Container (for side-by-side preview) -->
-  <div class="main-container">
-    <!-- Main Content -->
-    <main id="main" class="main-content container">
+    <main id="main">
 
       <!-- Session Info -->
       <div class="session-header">
@@ -373,18 +385,12 @@
 
     </main>
 
-    <!-- Live Preview Pane (Desktop) -->
-    <aside id="live-preview-pane" class="live-preview-pane no-print">
-      <div class="preview-header">
-        <span>Live Preview</span>
-        <button class="preview-close" onclick="App.togglePreview()" aria-label="Close preview">&times;</button>
-      </div>
-      <div id="preview-loading" class="preview-loading">
-        <div class="spinner"></div>
-        <span>Generating preview...</span>
-      </div>
-      <iframe id="preview-frame" class="preview-frame" title="PDF Preview"></iframe>
-    </aside>
+    <!-- Footer -->
+    <footer class="footer no-print">
+      <p>
+        <a href="https://github.com/jeranaias/pft-cft-proctor">GitHub</a> · MCO 6100.13A w/CH-4 · v2.0
+      </p>
+    </footer>
   </div>
 
   <!-- Preview Modal (Mobile) -->
@@ -397,15 +403,6 @@
       <div id="preview-content" class="preview-modal__body"></div>
     </div>
   </div>
-
-  <!-- Footer -->
-  <footer class="footer no-print">
-    <div class="container">
-      <p class="text-sm text-secondary text-center">
-        <a href="https://github.com/jeranaias/pft-cft-proctor">GitHub</a> · MCO 6100.13A w/CH-4 · v2.0
-      </p>
-    </div>
-  </footer>
 
   <!-- Scripts (order matters) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
