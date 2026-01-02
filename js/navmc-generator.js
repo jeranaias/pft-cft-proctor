@@ -188,10 +188,11 @@ const NAVMCGenerator = {
     // Draw the main data table
     this.drawDataTable(doc, marines, headerY + headerHeight);
 
-    // Note at bottom - positioned like original
-    doc.setFontSize(5.5);
+    // Note at bottom - positioned like original (italic for emphasis)
+    doc.setFontSize(6);
+    doc.setFont('helvetica', 'italic');
+    doc.text('*Note: Risk Factor Worksheet required for Marines age 46 and over.', margin, this.PAGE_HEIGHT - 18);
     doc.setFont('helvetica', 'normal');
-    doc.text('*Note: Risk Factor Worksheet required for Marines age 46 and over.', margin, this.PAGE_HEIGHT - 17);
 
     // Footer
     this.drawFooter(doc, 2);
@@ -405,22 +406,22 @@ const NAVMCGenerator = {
     doc.text('NAVMC 11622 (Rev. 01-20) (EF)', margin, pageHeight - 6);
 
     // FOUO notice (center, in a box)
-    const fouoWidth = 115;
+    const fouoWidth = 120;
     const fouoX = (pageWidth - fouoWidth) / 2;
-    const fouoY = pageHeight - 13;
-    const fouoHeight = 9;
+    const fouoY = pageHeight - 14;
+    const fouoHeight = 10;
 
     doc.setLineWidth(0.3);
     doc.rect(fouoX, fouoY, fouoWidth, fouoHeight);
 
     doc.setFontSize(7);
     doc.setFont('helvetica', 'bold');
-    doc.text('FOR OFFICIAL USE ONLY', pageWidth / 2, fouoY + 3.5, { align: 'center' });
+    doc.text('FOR OFFICIAL USE ONLY', pageWidth / 2, fouoY + 3.2, { align: 'center' });
 
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(5.5);
     doc.text('Privacy sensitive when filled in. Any misuse or unauthorized', pageWidth / 2, fouoY + 6, { align: 'center' });
-    doc.text('disclosure may result in both civil and criminal penalties.', pageWidth / 2, fouoY + 8, { align: 'center' });
+    doc.text('disclosure may result in both civil and criminal penalties.', pageWidth / 2, fouoY + 8.5, { align: 'center' });
 
     // Page number (bottom right)
     doc.setFontSize(8);
