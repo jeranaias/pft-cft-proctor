@@ -151,18 +151,39 @@ const NAVMCGenerator = {
     doc.setLineWidth(0.3);
     doc.setFontSize(6);
 
-    // Unit box - label at top-left inside box
+    // Unit box - label at top-left, value centered below
     doc.rect(margin, headerY, unitWidth, headerHeight);
     doc.setFont('helvetica', 'normal');
     doc.text('Unit', margin + 0.8, headerY + 2.5);
+    if (unit) {
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'bold');
+      doc.text(unit, margin + unitWidth / 2, headerY + 5.5, { align: 'center' });
+      doc.setFontSize(6);
+      doc.setFont('helvetica', 'normal');
+    }
 
-    // Date box - label centered at top
+    // Date box - label centered at top, value centered below
     doc.rect(margin + unitWidth, headerY, dateWidth, headerHeight);
     doc.text('Date', margin + unitWidth + (dateWidth / 2), headerY + 2.5, { align: 'center' });
+    if (date) {
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'bold');
+      doc.text(this.formatDate(date), margin + unitWidth + dateWidth / 2, headerY + 5.5, { align: 'center' });
+      doc.setFontSize(6);
+      doc.setFont('helvetica', 'normal');
+    }
 
-    // Monitor box - label at top-left
+    // Monitor box - label at top-left, value centered below
     doc.rect(margin + unitWidth + dateWidth, headerY, monitorWidth, headerHeight);
     doc.text('Monitor', margin + unitWidth + dateWidth + 0.8, headerY + 2.5);
+    if (monitor) {
+      doc.setFontSize(7);
+      doc.setFont('helvetica', 'bold');
+      doc.text(monitor, margin + unitWidth + dateWidth + monitorWidth / 2, headerY + 5.5, { align: 'center' });
+      doc.setFontSize(6);
+      doc.setFont('helvetica', 'normal');
+    }
 
     // Draw the main data table
     this.drawDataTable(doc, marines, headerY + headerHeight);
@@ -207,14 +228,15 @@ const NAVMCGenerator = {
       { key: 'row', width: 10, label: '5K Row' },
       { key: 'cardioScore', width: 8, label: 'Score' },
       { key: 'pftTotal', width: 11, label: ['PFT', 'Total'] },
-      // CFT Performance Data (7 columns)
-      { key: 'mtc', width: 8, label: 'MTC' },
-      { key: 'mtcTime', width: 8, label: 'Time' },
-      { key: 'al', width: 6, label: 'AL' },
-      { key: 'alReps', width: 8, label: 'Reps' },
-      { key: 'manuf', width: 10, label: 'MANUF' },
-      { key: 'manufTime', width: 8, label: 'Time' },
-      { key: 'passFail', width: 11, label: ['Pass/', 'Fail'] }
+      // CFT Performance Data (8 columns)
+      { key: 'mtcTime', width: 10, label: 'MTC' },
+      { key: 'mtcScore', width: 7, label: 'Score' },
+      { key: 'alReps', width: 7, label: 'AL' },
+      { key: 'alScore', width: 7, label: 'Score' },
+      { key: 'manufTime', width: 10, label: 'MANUF' },
+      { key: 'manufScore', width: 7, label: 'Score' },
+      { key: 'cftTotal', width: 9, label: ['CFT', 'Total'] },
+      { key: 'passFail', width: 8, label: ['Pass/', 'Fail'] }
     ];
 
     // Calculate x positions
@@ -245,7 +267,9 @@ const NAVMCGenerator = {
     doc.setFillColor(...this.COLORS.headerTan);
     doc.setFontSize(6);
     doc.setFont('helvetica', 'bold');
-    doc.setLineWidth(0.25);
+
+    // Draw group headers with thicker border
+    doc.setLineWidth(0.4);
 
     // Individual Data header
     doc.rect(margin, groupHeaderY, indDataWidth, groupHeaderHeight, 'FD');
@@ -258,6 +282,9 @@ const NAVMCGenerator = {
     // CFT Performance Data header
     doc.rect(pftDataEndX, groupHeaderY, cftDataWidth, groupHeaderHeight, 'FD');
     doc.text('CFT Performance Data', pftDataEndX + (cftDataWidth / 2), groupHeaderY + 3.3, { align: 'center' });
+
+    // Reset line width for column headers
+    doc.setLineWidth(0.25);
 
     // Column header row (white background)
     const colHeaderY = groupHeaderY + groupHeaderHeight;
@@ -287,6 +314,9 @@ const NAVMCGenerator = {
     doc.setFontSize(4.5);
     doc.setLineWidth(0.15);
 
+    // Columns that should be left-aligned (names, etc.)
+    const leftAlignedCols = ['rank', 'firstName', 'lastName'];
+
     for (let i = 0; i < maxRows; i++) {
       const rowY = dataStartY + (i * rowHeight);
       const marine = marines[i] || null;
@@ -297,11 +327,22 @@ const NAVMCGenerator = {
         if (marine) {
           const value = this.getCellValue(marine, col.key);
           if (value) {
-            doc.text(String(value), col.x + col.width / 2, rowY + 3.3, { align: 'center' });
+            if (leftAlignedCols.includes(col.key)) {
+              // Left-align with small padding
+              doc.text(String(value), col.x + 0.8, rowY + 3.3);
+            } else {
+              // Center-align
+              doc.text(String(value), col.x + col.width / 2, rowY + 3.3, { align: 'center' });
+            }
           }
         }
       });
     }
+
+    // Draw thick outer border around entire table
+    const tableEndY = dataStartY + (maxRows * rowHeight);
+    doc.setLineWidth(0.5);
+    doc.rect(margin, groupHeaderY, tableWidth, tableEndY - groupHeaderY);
   },
 
   /**
@@ -334,12 +375,13 @@ const NAVMCGenerator = {
       row: marine.rowTime || '',
       cardioScore: usedRun ? marine.runScore : (usedRow ? marine.rowScore : ''),
       pftTotal: marine.pftTotal || '',
-      mtc: '',
       mtcTime: marine.mtcTime || '',
-      al: '',
+      mtcScore: marine.mtcScore || '',
       alReps: marine.alReps || '',
-      manuf: '',
+      alScore: marine.alScore || '',
       manufTime: marine.manufTime || '',
+      manufScore: marine.manufScore || '',
+      cftTotal: marine.cftTotal || '',
       passFail: marine.cftTotal >= 150 ? 'P' : (marine.cftTotal > 0 ? 'F' : '')
     };
     return mapping[key] !== undefined ? mapping[key] : '';
