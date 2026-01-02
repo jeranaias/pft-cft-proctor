@@ -14,7 +14,7 @@ const NAVMCGenerator = {
   COLORS: {
     black: [0, 0, 0],
     darkBlue: [0, 32, 96],
-    headerTan: [253, 234, 218],    // Light tan/peach for group headers - closer to original
+    headerTan: [252, 228, 214],    // Light tan/peach for group headers - matches original form
     white: [255, 255, 255],
     linkBlue: [0, 0, 238]          // Standard hyperlink blue
   },
@@ -328,12 +328,14 @@ const NAVMCGenerator = {
         if (marine) {
           const value = this.getCellValue(marine, col.key);
           if (value) {
+            // Truncate text if it's too long for the column
+            const displayValue = this.truncateText(doc, value, col.width);
             if (leftAlignedCols.includes(col.key)) {
               // Left-align with small padding
-              doc.text(String(value), col.x + 0.8, rowY + 3.3);
+              doc.text(displayValue, col.x + 0.8, rowY + 3.3);
             } else {
               // Center-align
-              doc.text(String(value), col.x + col.width / 2, rowY + 3.3, { align: 'center' });
+              doc.text(displayValue, col.x + col.width / 2, rowY + 3.3, { align: 'center' });
             }
           }
         }
@@ -429,6 +431,23 @@ const NAVMCGenerator = {
     doc.text(`Page ${pageNum} of 2`, pageWidth - margin, pageHeight - 9, { align: 'right' });
     doc.setFontSize(7);
     doc.text('AEM Designer 6.5', pageWidth - margin, pageHeight - 5, { align: 'right' });
+  },
+
+  /**
+   * Truncate text to fit within a given width
+   */
+  truncateText(doc, text, maxWidth) {
+    if (!text) return '';
+    const textStr = String(text);
+    const textWidth = doc.getTextWidth(textStr);
+    if (textWidth <= maxWidth - 1) return textStr;
+
+    // Truncate with ellipsis
+    let truncated = textStr;
+    while (truncated.length > 0 && doc.getTextWidth(truncated + '...') > maxWidth - 1) {
+      truncated = truncated.slice(0, -1);
+    }
+    return truncated.length > 0 ? truncated + '...' : textStr.charAt(0);
   },
 
   /**
