@@ -59,13 +59,25 @@ const SessionManager = {
    * @returns {boolean} Success
    */
   addMarine(marineData) {
-    if (!marineData.lastName || !marineData.firstName) {
-      Utils.showStatus('error', 'Please enter Marine name (First and Last required)');
+    // Validate required fields
+    if (!marineData.lastName) {
+      Utils.showStatus('error', 'Last name is required');
+      const input = document.getElementById('marine-lastname');
+      if (input) input.focus();
+      return false;
+    }
+
+    if (!marineData.firstName) {
+      Utils.showStatus('error', 'First name is required');
+      const input = document.getElementById('marine-firstname');
+      if (input) input.focus();
       return false;
     }
 
     if (!marineData.age || marineData.age < 17) {
-      Utils.showStatus('error', 'Please enter a valid Date of Birth');
+      Utils.showStatus('error', 'Please enter Date of Birth (Marine must be 17+)');
+      const input = document.getElementById('marine-dob');
+      if (input) input.focus();
       return false;
     }
 

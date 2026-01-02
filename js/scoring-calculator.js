@@ -224,7 +224,7 @@ const ScoringCalculator = {
     // Classification
     const classification = Calculator.getClassification(total);
     const hasScores = upperScore > 0 || plankScore > 0 || cardioScore > 0;
-    Utils.setText('pft-class', hasScores ? `${classification.class} Class` : 'Enter scores above');
+    Utils.setText('pft-class', hasScores ? classification.class : 'Enter scores above');
 
     // Store current result
     this.currentPFT = {
@@ -299,7 +299,7 @@ const ScoringCalculator = {
     const classification = Calculator.getClassification(total);
     const hasScores = mtcScore > 0 || alScore > 0 || manufScore > 0;
     const passStatus = total >= 150 ? 'PASS' : 'FAIL';
-    Utils.setText('cft-class', hasScores ? `${classification.class} Class - ${passStatus}` : 'Enter scores above');
+    Utils.setText('cft-class', hasScores ? `${classification.class} - ${passStatus}` : 'Enter scores above');
 
     // Store current result
     this.currentCFT = {

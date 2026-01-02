@@ -22,7 +22,8 @@ function setTheme(theme) {
 }
 
 function updateThemeButton(theme) {
-  const icon = Utils.$('themeIcon');
+  // Use native DOM to avoid dependency on Utils during early initialization
+  const icon = document.getElementById('themeIcon');
   if (icon) {
     // Sun for dark mode (click to go light), Moon for light mode (click to go dark)
     icon.innerHTML = theme === 'dark' ? '&#9788;' : '&#9789;';
@@ -82,7 +83,7 @@ function initKeyboardShortcuts() {
  * Offline indicator
  */
 function updateOfflineIndicator(status, text) {
-  const indicator = Utils.$('offline-indicator');
+  const indicator = document.getElementById('offline-indicator');
   if (!indicator) return;
 
   indicator.classList.remove('ready', 'offline');
@@ -129,12 +130,56 @@ function registerServiceWorker() {
 }
 
 /**
+ * PWA Install prompt handling
+ */
+let deferredInstallPrompt = null;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  // Prevent default browser prompt
+  e.preventDefault();
+  // Store the event for later use
+  deferredInstallPrompt = e;
+  // Show our install button
+  const installBtn = document.getElementById('pwa-install-btn');
+  if (installBtn) {
+    installBtn.style.display = 'inline-block';
+  }
+});
+
+function installPWA() {
+  if (!deferredInstallPrompt) {
+    Utils.showStatus('info', 'Use browser menu to install');
+    return;
+  }
+
+  // Show the browser install prompt
+  deferredInstallPrompt.prompt();
+
+  // Wait for user response
+  deferredInstallPrompt.userChoice.then((choiceResult) => {
+    if (choiceResult.outcome === 'accepted') {
+      Utils.showStatus('success', 'App installed!');
+    }
+    // Clear the deferred prompt
+    deferredInstallPrompt = null;
+    // Hide our button
+    const installBtn = document.getElementById('pwa-install-btn');
+    if (installBtn) {
+      installBtn.style.display = 'none';
+    }
+  });
+}
+
+/**
  * Global API for onclick handlers
  * (These bridge HTML onclick to module methods)
  */
 const App = {
   // Theme
   toggleTheme,
+
+  // PWA
+  installPWA,
 
   // Form handlers
   toggleSection: (id) => FormHandler.toggleSection(id),

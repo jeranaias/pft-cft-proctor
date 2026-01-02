@@ -185,16 +185,23 @@ const FormHandler = {
    * Add current Marine to worksheet
    */
   addMarineToWorksheet() {
-    const marineData = this.collectMarineData();
-    const success = SessionManager.addMarine(marineData);
+    try {
+      const marineData = this.collectMarineData();
+      console.log('Collected marine data:', marineData);
 
-    if (success) {
-      this.clearForm();
-      // Scroll to worksheet section
-      const worksheetSection = Utils.$('worksheet-section');
-      if (worksheetSection) {
-        worksheetSection.scrollIntoView({ behavior: 'smooth' });
+      const success = SessionManager.addMarine(marineData);
+
+      if (success) {
+        this.clearForm();
+        // Scroll to worksheet section
+        const worksheetSection = Utils.$('worksheet-section');
+        if (worksheetSection) {
+          worksheetSection.scrollIntoView({ behavior: 'smooth' });
+        }
       }
+    } catch (error) {
+      console.error('Error adding Marine:', error);
+      Utils.showStatus('error', 'Failed to add Marine. Check console for details.');
     }
   },
 
