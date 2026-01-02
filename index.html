@@ -45,8 +45,9 @@
           <span id="themeIcon">&#9789;</span>
         </button>
       </div>
-      <h1>NAVMC 11622</h1>
-      <p class="subtitle">PFT/CFT Performance Worksheet Generator</p>
+      <h1>PFT/CFT PROCTOR</h1>
+      <p class="subtitle">MCO 6100.13A Compliant · NAVMC 11622 Generator</p>
+      <p class="tagline">Free tool for Marines · <a href="#install-guide" class="tagline-link">Offline Guide</a></p>
       <div id="offline-indicator" class="offline-badge">
         <span class="indicator-dot"></span>
         <span class="indicator-text">Checking...</span>
@@ -55,9 +56,22 @@
 
     <main id="main">
 
+      <!-- Test Type Selection -->
+      <div class="selection-cards">
+        <div class="selection-card selection-card--active" id="select-pft" onclick="App.selectTestType('pft')">
+          <div class="selection-card__title">PFT</div>
+          <div class="selection-card__subtitle">Physical Fitness Test</div>
+        </div>
+        <div class="selection-card" id="select-cft" onclick="App.selectTestType('cft')">
+          <div class="selection-card__title">CFT</div>
+          <div class="selection-card__subtitle">Combat Fitness Test</div>
+        </div>
+      </div>
+
       <!-- Session Info -->
       <div class="session-header">
-        <div class="session-header__title">Session Info</div>
+        <div class="session-header__title">Session Information</div>
+        <div class="session-header__helper">Set up your PT session details</div>
         <div class="session-header__grid">
           <div class="form-group m-0">
             <label class="label" for="session-unit">Unit</label>
@@ -77,7 +91,7 @@
       <!-- Marine Entry Section -->
       <div class="section" id="marine-section">
         <div class="section__header" onclick="App.toggleSection('marine-section')">
-          <div class="section__title">Add Marine</div>
+          <div class="section__title">Add Marine <span class="section__helper">Enter individual Marine data</span></div>
           <div class="section__toggle">▾</div>
         </div>
         <div class="section__body">
@@ -163,7 +177,7 @@
       <!-- PFT Section -->
       <div class="section" id="pft-section">
         <div class="section__header" onclick="App.toggleSection('pft-section')">
-          <div class="section__title">PFT Events</div>
+          <div class="section__title">PFT Events <span class="section__helper">Record performance for each event</span></div>
           <div class="section__score" id="pft-header-score">0 pts</div>
           <div class="section__toggle">▾</div>
         </div>
@@ -263,7 +277,7 @@
       <!-- CFT Section -->
       <div class="section" id="cft-section">
         <div class="section__header" onclick="App.toggleSection('cft-section')">
-          <div class="section__title">CFT Events</div>
+          <div class="section__title">CFT Events <span class="section__helper">Combat fitness performance</span></div>
           <div class="section__score" id="cft-header-score">0 pts</div>
           <div class="section__toggle">▾</div>
         </div>
@@ -335,6 +349,7 @@
           <div class="section__title">
             Worksheet
             <span class="badge badge--primary" id="marine-count-badge" style="margin-left: 8px;">0</span>
+            <span class="section__helper">Marines ready for PDF export</span>
           </div>
           <div class="section__toggle">▾</div>
         </div>

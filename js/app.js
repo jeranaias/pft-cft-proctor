@@ -171,6 +171,32 @@ function installPWA() {
 }
 
 /**
+ * Test type selection (PFT vs CFT)
+ */
+let currentTestType = 'pft';
+
+function selectTestType(type) {
+  currentTestType = type;
+
+  // Update card states
+  const pftCard = document.getElementById('select-pft');
+  const cftCard = document.getElementById('select-cft');
+
+  if (pftCard) pftCard.classList.toggle('selection-card--active', type === 'pft');
+  if (cftCard) cftCard.classList.toggle('selection-card--active', type === 'cft');
+
+  // Show/hide relevant sections
+  const pftSection = document.getElementById('pft-section');
+  const cftSection = document.getElementById('cft-section');
+
+  if (pftSection) pftSection.style.display = type === 'pft' ? 'block' : 'none';
+  if (cftSection) cftSection.style.display = type === 'cft' ? 'block' : 'none';
+
+  // Save preference
+  localStorage.setItem('testType', type);
+}
+
+/**
  * Global API for onclick handlers
  * (These bridge HTML onclick to module methods)
  */
@@ -180,6 +206,9 @@ const App = {
 
   // PWA
   installPWA,
+
+  // Test type
+  selectTestType,
 
   // Form handlers
   toggleSection: (id) => FormHandler.toggleSection(id),
@@ -213,6 +242,10 @@ async function initApp() {
 
   // Initialize theme immediately (prevents flash)
   initTheme();
+
+  // Restore test type preference
+  const savedTestType = localStorage.getItem('testType') || 'pft';
+  selectTestType(savedTestType);
 
   // Initialize core modules
   FormHandler.init();
