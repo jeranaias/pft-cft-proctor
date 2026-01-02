@@ -7,17 +7,29 @@
  */
 
 /**
- * Theme management
+ * Theme management - 3-way toggle (dark/light/night)
  */
+const THEMES = ['dark', 'light', 'night'];
+const THEME_ICONS = {
+  dark: '&#9790;',   // Moon (crescent)
+  light: '&#9788;',  // Sun
+  night: '&#9733;'   // Star
+};
+
 function toggleTheme() {
-  const currentTheme = document.documentElement.getAttribute('data-theme');
-  const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-  setTheme(newTheme);
+  const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+  const currentIndex = THEMES.indexOf(currentTheme);
+  const nextIndex = (currentIndex + 1) % THEMES.length;
+  setTheme(THEMES[nextIndex]);
 }
 
 function setTheme(theme) {
+  // Validate theme
+  if (!THEMES.includes(theme)) {
+    theme = 'dark';
+  }
   document.documentElement.setAttribute('data-theme', theme);
-  localStorage.setItem('theme', theme);
+  localStorage.setItem('usmc-tools-theme', theme);
   updateThemeButton(theme);
 }
 
@@ -25,13 +37,20 @@ function updateThemeButton(theme) {
   // Use native DOM to avoid dependency on Utils during early initialization
   const icon = document.getElementById('themeIcon');
   if (icon) {
-    // Sun for dark mode (click to go light), Moon for light mode (click to go dark)
-    icon.innerHTML = theme === 'dark' ? '&#9788;' : '&#9789;';
+    icon.innerHTML = THEME_ICONS[theme] || THEME_ICONS.dark;
+  }
+
+  // Update button title for accessibility
+  const btn = document.getElementById('theme-toggle');
+  if (btn) {
+    const nextTheme = THEMES[(THEMES.indexOf(theme) + 1) % THEMES.length];
+    btn.title = `Current: ${theme.charAt(0).toUpperCase() + theme.slice(1)} mode (click for ${nextTheme})`;
   }
 }
 
 function initTheme() {
-  const savedTheme = localStorage.getItem('theme');
+  // Check both old and new localStorage keys for migration
+  const savedTheme = localStorage.getItem('usmc-tools-theme') || localStorage.getItem('theme');
   const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
   const theme = savedTheme || (systemPrefersDark ? 'dark' : 'light');
   setTheme(theme);

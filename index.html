@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -38,9 +38,6 @@
     <!-- Header -->
     <header class="no-print">
       <div class="header-controls">
-        <button id="preview-toggle" type="button" class="header-btn" onclick="App.togglePreview()" title="Ctrl+L">
-          Live Preview
-        </button>
         <button id="theme-toggle" type="button" class="header-btn" onclick="App.toggleTheme()">
           <span id="themeIcon">&#9789;</span>
         </button>
@@ -86,6 +83,16 @@
             <input type="text" id="session-monitor" class="input" placeholder="SSgt Smith">
           </div>
         </div>
+      </div>
+
+      <!-- Quick Actions Toolbar -->
+      <div class="quick-toolbar">
+        <button type="button" id="preview-toggle" class="btn btn-preview" onclick="App.togglePreview()" title="Ctrl+L">
+          Live Preview
+        </button>
+        <button type="button" class="btn btn-toolbar-secondary" onclick="App.clearForm()">
+          Clear Form
+        </button>
       </div>
 
       <!-- Marine Entry Section -->
