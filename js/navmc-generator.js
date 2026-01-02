@@ -204,32 +204,32 @@ const NAVMCGenerator = {
     const margin = this.MARGIN;
     const tableWidth = this.PAGE_WIDTH - (margin * 2);
 
-    // Column definitions - widths tuned to match original
+    // Column definitions - widths tuned to match official NAVMC 11622
     const cols = [
       // Individual Data (9 columns)
-      { key: 'rank', width: 9, label: 'Rank' },
-      { key: 'firstName', width: 14, label: ['First', 'Name'] },
-      { key: 'mi', width: 5, label: 'MI' },
-      { key: 'lastName', width: 14, label: ['Last', 'Name'] },
-      { key: 'edipi', width: 15, label: 'EDIPI' },
-      { key: 'age', width: 8, label: 'Age*' },
-      { key: 'gender', width: 10, label: 'Gender' },
-      { key: 'height', width: 10, label: 'Height' },
-      { key: 'weight', width: 10, label: 'Weight' },
+      { key: 'rank', width: 10, label: 'Rank' },
+      { key: 'firstName', width: 15, label: ['First', 'Name'] },
+      { key: 'mi', width: 6, label: 'MI' },
+      { key: 'lastName', width: 16, label: ['Last', 'Name'] },
+      { key: 'edipi', width: 16, label: 'EDIPI' },
+      { key: 'age', width: 7, label: 'Age*' },
+      { key: 'gender', width: 9, label: 'Gender' },
+      { key: 'height', width: 9, label: 'Height' },
+      { key: 'weight', width: 9, label: 'Weight' },
       // PFT Performance Data (11 columns)
-      { key: 'phaDate', width: 8, label: ['PHA', 'Date'] },
-      { key: 'pullUps', width: 7, label: ['Pull', 'Ups'] },
-      { key: 'pushUps', width: 7, label: ['Push', 'Ups'] },
-      { key: 'upperScore', width: 8, label: 'Score' },
-      { key: 'crunch', width: 10, label: 'Crunch' },
+      { key: 'phaDate', width: 9, label: ['PHA', 'Date'] },
+      { key: 'pullUps', width: 8, label: ['Pull', 'Ups'] },
+      { key: 'pushUps', width: 8, label: ['Push', 'Ups'] },
+      { key: 'upperScore', width: 7, label: 'Score' },
+      { key: 'crunch', width: 9, label: 'Crunch' },
       { key: 'plank', width: 9, label: 'Plank' },
-      { key: 'coreScore', width: 8, label: 'Score' },
-      { key: 'run', width: 13, label: ['3 Mile', 'Run'] },
+      { key: 'coreScore', width: 7, label: 'Score' },
+      { key: 'run', width: 11, label: ['3 Mile', 'Run'] },
       { key: 'row', width: 10, label: '5K Row' },
-      { key: 'cardioScore', width: 8, label: 'Score' },
-      { key: 'pftTotal', width: 11, label: ['PFT', 'Total'] },
+      { key: 'cardioScore', width: 7, label: 'Score' },
+      { key: 'pftTotal', width: 10, label: ['PFT', 'Total'] },
       // CFT Performance Data (8 columns)
-      { key: 'mtcTime', width: 10, label: 'MTC' },
+      { key: 'mtcTime', width: 9, label: 'MTC' },
       { key: 'mtcScore', width: 7, label: 'Score' },
       { key: 'alReps', width: 7, label: 'AL' },
       { key: 'alScore', width: 7, label: 'Score' },
@@ -343,6 +343,10 @@ const NAVMCGenerator = {
     const tableEndY = dataStartY + (maxRows * rowHeight);
     doc.setLineWidth(0.5);
     doc.rect(margin, groupHeaderY, tableWidth, tableEndY - groupHeaderY);
+
+    // Draw thick vertical lines between sections (Individual Data | PFT | CFT)
+    doc.line(indDataEndX, groupHeaderY, indDataEndX, tableEndY);
+    doc.line(pftDataEndX, groupHeaderY, pftDataEndX, tableEndY);
   },
 
   /**
