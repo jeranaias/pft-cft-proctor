@@ -143,10 +143,10 @@ const NAVMCGenerator = {
     const headerY = 20;
     const headerHeight = 8;
 
-    // Proportions from original: Unit ~4%, Date ~79%, Monitor ~17%
-    const unitWidth = contentWidth * 0.04;
-    const dateWidth = contentWidth * 0.79;
-    const monitorWidth = contentWidth * 0.17;
+    // Proportions from original: Unit is very narrow, Date takes most space, Monitor medium
+    const unitWidth = 12;  // Fixed narrow width for "Unit" label
+    const monitorWidth = contentWidth * 0.12;
+    const dateWidth = contentWidth - unitWidth - monitorWidth;
 
     doc.setLineWidth(0.3);
     doc.setFontSize(6);
@@ -229,15 +229,14 @@ const NAVMCGenerator = {
       { key: 'row', width: 10, label: '5K Row' },
       { key: 'cardioScore', width: 7, label: 'Score' },
       { key: 'pftTotal', width: 10, label: ['PFT', 'Total'] },
-      // CFT Performance Data (8 columns)
-      { key: 'mtcTime', width: 9, label: 'MTC' },
-      { key: 'mtcScore', width: 7, label: 'Score' },
-      { key: 'alReps', width: 7, label: 'AL' },
-      { key: 'alScore', width: 7, label: 'Score' },
-      { key: 'manufTime', width: 10, label: 'MANUF' },
-      { key: 'manufScore', width: 7, label: 'Score' },
-      { key: 'cftTotal', width: 9, label: ['CFT', 'Total'] },
-      { key: 'passFail', width: 8, label: ['Pass/', 'Fail'] }
+      // CFT Performance Data (7 columns) - matches original exactly
+      { key: 'mtc', width: 8, label: 'MTC' },
+      { key: 'mtcTime', width: 9, label: 'Time' },
+      { key: 'al', width: 7, label: 'AL' },
+      { key: 'alReps', width: 9, label: 'Reps' },
+      { key: 'manuf', width: 10, label: 'MANUF' },
+      { key: 'manufTime', width: 9, label: 'Time' },
+      { key: 'passFail', width: 12, label: ['Pass/', 'Fail'] }
     ];
 
     // Calculate x positions
@@ -382,13 +381,13 @@ const NAVMCGenerator = {
       row: marine.rowTime || '',
       cardioScore: usedRun ? marine.runScore : (usedRow ? marine.rowScore : ''),
       pftTotal: marine.pftTotal || '',
+      // CFT columns - no score columns, just event/time/reps
+      mtc: '',  // Event name column (leave blank for data rows)
       mtcTime: marine.mtcTime || '',
-      mtcScore: marine.mtcScore || '',
+      al: '',   // Event name column (leave blank for data rows)
       alReps: marine.alReps || '',
-      alScore: marine.alScore || '',
+      manuf: '', // Event name column (leave blank for data rows)
       manufTime: marine.manufTime || '',
-      manufScore: marine.manufScore || '',
-      cftTotal: marine.cftTotal || '',
       passFail: marine.cftTotal >= 150 ? 'P' : (marine.cftTotal > 0 ? 'F' : '')
     };
     return mapping[key] !== undefined ? mapping[key] : '';
@@ -402,10 +401,16 @@ const NAVMCGenerator = {
     const pageHeight = this.PAGE_HEIGHT;
     const margin = this.MARGIN;
 
-    // Form number (bottom left) - NO box around it
+    // Form number (bottom left) - in a box like original
+    const navmcBoxWidth = 52;
+    const navmcBoxHeight = 6;
+    const navmcBoxY = pageHeight - 11;
+
+    doc.setLineWidth(0.3);
+    doc.rect(margin, navmcBoxY, navmcBoxWidth, navmcBoxHeight);
     doc.setFontSize(7);
     doc.setFont('helvetica', 'bold');
-    doc.text('NAVMC 11622 (Rev. 01-20) (EF)', margin, pageHeight - 6);
+    doc.text('NAVMC 11622 (Rev. 01-20) (EF)', margin + navmcBoxWidth / 2, navmcBoxY + 4, { align: 'center' });
 
     // FOUO notice (center, in a box)
     const fouoWidth = 120;
