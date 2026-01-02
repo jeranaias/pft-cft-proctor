@@ -140,8 +140,8 @@ const NAVMCGenerator = {
     doc.text('PFT/CFT Performance Worksheet', pageWidth / 2, 17, { align: 'center' });
 
     // Unit / Date / Monitor header boxes
-    const headerY = 21;
-    const headerHeight = 7;
+    const headerY = 20;
+    const headerHeight = 8;
 
     // Proportions from original: Unit ~4%, Date ~79%, Monitor ~17%
     const unitWidth = contentWidth * 0.04;
@@ -154,33 +154,33 @@ const NAVMCGenerator = {
     // Unit box - label at top-left, value centered below
     doc.rect(margin, headerY, unitWidth, headerHeight);
     doc.setFont('helvetica', 'normal');
-    doc.text('Unit', margin + 0.8, headerY + 2.5);
+    doc.text('Unit', margin + 0.8, headerY + 2.8);
     if (unit) {
       doc.setFontSize(8);
       doc.setFont('helvetica', 'bold');
-      doc.text(unit, margin + unitWidth / 2, headerY + 5.5, { align: 'center' });
+      doc.text(unit, margin + unitWidth / 2, headerY + 6.2, { align: 'center' });
       doc.setFontSize(6);
       doc.setFont('helvetica', 'normal');
     }
 
     // Date box - label centered at top, value centered below
     doc.rect(margin + unitWidth, headerY, dateWidth, headerHeight);
-    doc.text('Date', margin + unitWidth + (dateWidth / 2), headerY + 2.5, { align: 'center' });
+    doc.text('Date', margin + unitWidth + (dateWidth / 2), headerY + 2.8, { align: 'center' });
     if (date) {
-      doc.setFontSize(8);
+      doc.setFontSize(9);
       doc.setFont('helvetica', 'bold');
-      doc.text(this.formatDate(date), margin + unitWidth + dateWidth / 2, headerY + 5.5, { align: 'center' });
+      doc.text(this.formatDate(date), margin + unitWidth + dateWidth / 2, headerY + 6.2, { align: 'center' });
       doc.setFontSize(6);
       doc.setFont('helvetica', 'normal');
     }
 
     // Monitor box - label at top-left, value centered below
     doc.rect(margin + unitWidth + dateWidth, headerY, monitorWidth, headerHeight);
-    doc.text('Monitor', margin + unitWidth + dateWidth + 0.8, headerY + 2.5);
+    doc.text('Monitor', margin + unitWidth + dateWidth + 0.8, headerY + 2.8);
     if (monitor) {
-      doc.setFontSize(7);
+      doc.setFontSize(8);
       doc.setFont('helvetica', 'bold');
-      doc.text(monitor, margin + unitWidth + dateWidth + monitorWidth / 2, headerY + 5.5, { align: 'center' });
+      doc.text(monitor, margin + unitWidth + dateWidth + monitorWidth / 2, headerY + 6.2, { align: 'center' });
       doc.setFontSize(6);
       doc.setFont('helvetica', 'normal');
     }
