@@ -17,7 +17,7 @@
   --text-muted: #AAAAAA;
   --accent-red: #DC4444;
   --accent-yellow: #EAB308;
-  --btn-primary: #28A745;
+  --btn-primary: #DC4444;
   --btn-primary-text: #FFFFFF;
   --header-gradient-start: #5C1A1A;
   --header-gradient-end: #6C2A2A;
@@ -340,53 +340,7 @@ header .tagline-link:hover {
   box-shadow: var(--shadow-md);
 }
 
-/* ========================================
-   Selection Cards (PFT/CFT choice)
-   ======================================== */
-.selection-cards {
-  display: flex;
-  gap: var(--space-3);
-  margin-bottom: var(--space-4);
-}
-
-.selection-card {
-  flex: 1;
-  background: var(--tab-inactive-bg);
-  border: 2px solid var(--tab-inactive-border);
-  border-radius: var(--radius-lg);
-  padding: var(--space-4);
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  color: var(--text-secondary);
-}
-
-.selection-card:hover {
-  border-color: var(--accent-red);
-  transform: translateY(-2px);
-}
-
-.selection-card--active {
-  background: var(--tab-active-bg);
-  border-color: var(--tab-active-bg);
-  color: white;
-}
-
-.selection-card--active:hover {
-  border-color: var(--tab-active-bg);
-  transform: none;
-}
-
-.selection-card__title {
-  font-size: var(--text-lg);
-  font-weight: var(--font-bold);
-  margin-bottom: var(--space-1);
-}
-
-.selection-card__subtitle {
-  font-size: var(--text-sm);
-  opacity: 0.8;
-}
+/* Selection Cards removed - replaced with test-type-tabs */
 
 .card__header {
   margin-bottom: var(--space-4);
@@ -436,17 +390,19 @@ header .tagline-link:hover {
 }
 
 .btn--primary:hover:not(:disabled) {
-  background: #218838;
+  background: #B91C1C;
   transform: translateY(-1px);
 }
 
 .btn--secondary {
-  background: var(--secondary);
-  color: var(--white);
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-input);
 }
 
 .btn--secondary:hover:not(:disabled) {
-  background: var(--secondary-dark);
+  background: var(--surface-hover);
+  border-color: var(--border-dark);
 }
 
 .btn--outline {
@@ -1159,7 +1115,7 @@ header .tagline-link:hover {
 }
 
 .section__score {
-  background: var(--primary);
+  background: var(--accent-red);
   color: var(--white);
   padding: var(--space-1) var(--space-3);
   border-radius: var(--radius-full);
@@ -1167,18 +1123,6 @@ header .tagline-link:hover {
   font-weight: var(--font-bold);
   min-width: 60px;
   text-align: center;
-}
-
-.section__score--success {
-  background: var(--success);
-}
-
-.section__score--warning {
-  background: var(--warning);
-}
-
-.section__score--error {
-  background: var(--error);
 }
 
 .section__body {
@@ -1692,35 +1636,7 @@ header .tagline-link:hover {
   border-color: var(--gold);
 }
 
-.offline-badge {
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.7rem;
-  color: rgba(255,255,255,0.8);
-}
-
-.offline-badge .indicator-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--accent-yellow);
-}
-
-.offline-badge.offline .indicator-dot {
-  background: #ff6b6b;
-}
-
-.offline-badge.ready .indicator-dot {
-  background: #4ade80;
-}
-
-.offline-indicator.offline .indicator-dot {
-  background: #f87171;
-}
+/* Offline badge removed - no status indicator in header */
 
 /* ========================================
    Main Container & Live Preview Layout
@@ -2016,3 +1932,106 @@ details summary::after {
   border-color: var(--accent-red);
   color: var(--accent-red);
 }
+
+/* ========================================
+   Test Type Tabs (PFT/CFT Pill Buttons)
+   ======================================== */
+.test-type-tabs {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.test-tab {
+  padding: 10px 32px;
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  border: 2px solid var(--border-input);
+  border-radius: var(--radius-full);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  min-width: 100px;
+}
+
+.test-tab:hover {
+  border-color: var(--accent-red);
+  color: var(--accent-red);
+}
+
+.test-tab--active {
+  background: var(--accent-red);
+  border-color: var(--accent-red);
+  color: white;
+}
+
+.test-tab--active:hover {
+  background: #B91C1C;
+  border-color: #B91C1C;
+  color: white;
+}
+
+/* ========================================
+   Collapsible Sections (Keyboard Shortcuts, Install)
+   ======================================== */
+.collapsible-section {
+  background: var(--bg-card);
+  border: 1px solid var(--border-input);
+  border-left: 4px solid var(--accent-yellow);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.collapsible-section__header {
+  display: block;
+  padding: var(--space-4);
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+  color: var(--accent-yellow);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  list-style: none;
+}
+
+.collapsible-section__header::-webkit-details-marker {
+  display: none;
+}
+
+.collapsible-section__header::after {
+  content: ' ▼';
+  font-size: var(--text-xs);
+  opacity: 0.7;
+}
+
+.collapsible-section[open] .collapsible-section__header::after {
+  content: ' ▲';
+}
+
+.collapsible-section__body {
+  padding: var(--space-4);
+  border-top: 1px solid var(--border-input);
+}
+
+/* ========================================
+   Footer Styles (Part of USMC Tools)
+   ======================================== */
+.footer__suite {
+  font-size: var(--text-sm);
+  margin-bottom: var(--space-2);
+}
+
+.footer__suite a {
+  color: var(--accent-yellow);
+  font-weight: var(--font-semibold);
+}
+
+.footer__links {
+  font-size: var(--text-xs);
+  opacity: 0.8;
+}
+

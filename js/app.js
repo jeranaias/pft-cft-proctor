@@ -197,12 +197,12 @@ let currentTestType = 'pft';
 function selectTestType(type) {
   currentTestType = type;
 
-  // Update card states
-  const pftCard = document.getElementById('select-pft');
-  const cftCard = document.getElementById('select-cft');
+  // Update tab states
+  const pftTab = document.getElementById('select-pft');
+  const cftTab = document.getElementById('select-cft');
 
-  if (pftCard) pftCard.classList.toggle('selection-card--active', type === 'pft');
-  if (cftCard) cftCard.classList.toggle('selection-card--active', type === 'cft');
+  if (pftTab) pftTab.classList.toggle('test-tab--active', type === 'pft');
+  if (cftTab) cftTab.classList.toggle('test-tab--active', type === 'cft');
 
   // Show/hide relevant sections
   const pftSection = document.getElementById('pft-section');

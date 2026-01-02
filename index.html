@@ -38,31 +38,21 @@
     <!-- Header -->
     <header class="no-print">
       <div class="header-controls">
-        <button id="theme-toggle" type="button" class="header-btn" onclick="App.toggleTheme()">
-          <span id="themeIcon">&#9789;</span>
+        <button id="theme-toggle" type="button" class="header-btn" onclick="App.toggleTheme()" title="Toggle theme">
+          <span id="themeIcon">&#9790;</span>
         </button>
       </div>
       <h1>PFT/CFT PROCTOR</h1>
       <p class="subtitle">MCO 6100.13A Compliant · NAVMC 11622 Generator</p>
       <p class="tagline">Free tool for Marines · <a href="#install-guide" class="tagline-link">Offline Guide</a></p>
-      <div id="offline-indicator" class="offline-badge">
-        <span class="indicator-dot"></span>
-        <span class="indicator-text">Checking...</span>
-      </div>
     </header>
 
     <main id="main">
 
-      <!-- Test Type Selection -->
-      <div class="selection-cards">
-        <div class="selection-card selection-card--active" id="select-pft" onclick="App.selectTestType('pft')">
-          <div class="selection-card__title">PFT</div>
-          <div class="selection-card__subtitle">Physical Fitness Test</div>
-        </div>
-        <div class="selection-card" id="select-cft" onclick="App.selectTestType('cft')">
-          <div class="selection-card__title">CFT</div>
-          <div class="selection-card__subtitle">Combat Fitness Test</div>
-        </div>
+      <!-- Test Type Selection (Pill Buttons like OSMEAC) -->
+      <div class="test-type-tabs">
+        <button type="button" class="test-tab test-tab--active" id="select-pft" onclick="App.selectTestType('pft')">PFT</button>
+        <button type="button" class="test-tab" id="select-cft" onclick="App.selectTestType('cft')">CFT</button>
       </div>
 
       <!-- Session Info -->
@@ -390,11 +380,11 @@
       </div>
 
       <!-- Keyboard Shortcuts Help -->
-      <details class="card mb-4 no-print">
-        <summary class="card__title" style="cursor: pointer; padding: var(--space-4);">
-          Keyboard Shortcuts
+      <details class="collapsible-section mb-4 no-print">
+        <summary class="collapsible-section__header">
+          KEYBOARD SHORTCUTS
         </summary>
-        <div class="p-4">
+        <div class="collapsible-section__body">
           <div class="text-sm text-secondary">
             <p><kbd>Ctrl+D</kbd> Download PDF</p>
             <p><kbd>Ctrl+P</kbd> Print PDF</p>
@@ -406,11 +396,11 @@
       </details>
 
       <!-- Install App / Offline Guide -->
-      <details class="card mb-4 no-print" id="install-guide">
-        <summary class="card__title" style="cursor: pointer; padding: var(--space-4);">
-          Install for Offline Use
+      <details class="collapsible-section mb-4 no-print" id="install-guide">
+        <summary class="collapsible-section__header">
+          INSTALL FOR OFFLINE USE
         </summary>
-        <div class="p-4">
+        <div class="collapsible-section__body">
           <div class="text-sm text-secondary">
             <p style="margin-bottom: 1rem;"><strong>This tool works offline!</strong> After your first visit, you can use it without internet.</p>
 
@@ -437,7 +427,10 @@
 
     <!-- Footer -->
     <footer class="footer no-print">
-      <p>
+      <p class="footer__suite">
+        Part of <a href="https://jeranaias.github.io/usmc-tools/">USMC Tools</a>
+      </p>
+      <p class="footer__links">
         <a href="https://github.com/jeranaias/pft-cft-proctor">GitHub</a> · MCO 6100.13A w/CH-4 · v2.0
       </p>
     </footer>
