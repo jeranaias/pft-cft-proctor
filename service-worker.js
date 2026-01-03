@@ -3,25 +3,25 @@
  * Enables offline functionality
  */
 
-const CACHE_NAME = 'pft-cft-proctor-v4';
+const CACHE_NAME = 'pft-cft-proctor-v5';
 const urlsToCache = [
-  '/',
-  '/index.html',
-  '/css/styles.css',
-  '/js/scoring-tables.js',
-  '/js/calculator.js',
-  '/js/bodyfat.js',
-  '/js/storage.js',
-  '/js/navmc-generator.js',
-  '/js/utils.js',
-  '/js/scoring-calculator.js',
-  '/js/session-manager.js',
-  '/js/form-handler.js',
-  '/js/preview-manager.js',
-  '/js/app.js',
-  '/manifest.json',
-  '/assets/icon-192.svg',
-  '/assets/icon-512.svg'
+  './',
+  './index.html',
+  './css/styles.css',
+  './js/scoring-tables.js',
+  './js/calculator.js',
+  './js/bodyfat.js',
+  './js/storage.js',
+  './js/navmc-generator.js',
+  './js/utils.js',
+  './js/scoring-calculator.js',
+  './js/session-manager.js',
+  './js/form-handler.js',
+  './js/preview-manager.js',
+  './js/app.js',
+  './manifest.json',
+  './assets/icon-192.svg',
+  './assets/icon-512.svg'
 ];
 
 // Install event - cache assets
